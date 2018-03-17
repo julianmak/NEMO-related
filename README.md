@@ -4,7 +4,7 @@ Personal homebrew collection of NEMO (> ver 3.6) related content.
 
 Disclaimer!!! The codes and ESPEICALLY the Python codes for dealing with NEMO data are mostly adapted from pre-existing
 tools (there should be documentation from "where"; if there isn't please let me know.) I don't claim to have done 
-anything new/clever/efficient, so use at your own risk!
+anything new/clever/efficient/100% correct, so use these at your own risk!
 
 # To do:
 - [ ] upload ldfeke (code, guide, technical notes) at some point
