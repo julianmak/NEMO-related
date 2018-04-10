@@ -51,7 +51,7 @@ def cdfpsi(data_dir, u_file, u_var, v_file, v_var, **kwargs):
     i[ij]ref = number for using a different normalising reference (need both to be specified)
     
   Returns:
-    lonT (glamf), latT (gphif), dpsi for plotting, opt_dic for record
+    lonF (glamf), latF (gphif), dpsi for plotting, opt_dic for record
   """
   # some defaults for optional arguments
   opt_dic = {"kt"     : 0, 

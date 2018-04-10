@@ -3,11 +3,11 @@
 # subfunction for generating the modulus of the velocity
 # partly adapted from CDFTOOLS/cdfcurl:
 #  !!======================================================================
-#  !!                     ***  PROGRAM  cdfmodu  ***
+#  !!                     ***  PROGRAM  cdfabsu  ***
 #  !!=====================================================================
 #  !!  ** Purpose : Compute current speed
 #  !!
-#  !!  ** Method  : Compute the 2D field modu from U and V velocity (on T point)
+#  !!  ** Method  : Compute the 2D field absu from U and V velocity (on T point)
 #  !!
 #  !! History : new  : 04/2018  : J. Mak : Original code?
 #  !!=====================================================================
@@ -18,7 +18,7 @@ from netCDF4 import Dataset
 import copy
 from sys import exit
 
-def cdfpsi(data_dir, u_file, u_var, v_file, v_var, **kwargs):
+def cdfabsu(data_dir, u_file, u_var, v_file, v_var, **kwargs):
   """
   Compute (Absolute) Current Speed
 
@@ -38,12 +38,12 @@ def cdfpsi(data_dir, u_file, u_var, v_file, v_var, **kwargs):
     lperiod  = True   for imposing E-W periodicity
     
   Returns:
-    lonT (glamf), latT (gphif), modu for plotting, opt_dic for record
+    lonT (glamt), latT (gphit), absu for plotting, opt_dic for record
   """
   # some defaults for optional arguments
   opt_dic = {"kt"     : 0, 
              "kz"     : 0,
-             "lperiod": False, 
+             "lperio" : False, 
              "lprint" : False}
 
   # overwrite the options by cycling through the input dictionary
@@ -54,8 +54,8 @@ def cdfpsi(data_dir, u_file, u_var, v_file, v_var, **kwargs):
   cn_mask = Dataset(data_dir + "mesh_mask.nc")
   npiglo  = cn_mask.dimensions["x"].size
   npjglo  = cn_mask.dimensions["y"].size
-  glamf   = cn_mask.variables["glamf"][0, :, :]
-  gphif   = cn_mask.variables["gphif"][0, :, :]
+  glamt   = cn_mask.variables["glamt"][0, :, :]
+  gphit   = cn_mask.variables["gphit"][0, :, :]
   e1u     = cn_mask.variables["e1u"][0, :, :]  
   e2v     = cn_mask.variables["e2v"][0, :, :]
   cn_mask.close()
@@ -73,11 +73,11 @@ def cdfpsi(data_dir, u_file, u_var, v_file, v_var, **kwargs):
   cf_vfil.close()
   
   # average the velocities onto the T points
-  umod = np.zeros((npjglo, npiglo))
+  absu = np.zeros((npjglo, npiglo))
   
   for ji in range(npiglo-1):
     for jj in range(npjglo-1):
-        umod[jj, ji] = np.sqrt(  ( (e1u[jj, ji+1] * zu[jj, ji  ] 
+        absu[jj, ji] = np.sqrt(  ( (e1u[jj, ji+1] * zu[jj, ji  ] 
                                   + e1u[jj, ji  ] * zu[jj, ji+1]) 
                                  / (e1u[jj, ji] + e1u[jj, ji+1]) ) ** 2
                               +  ( (e2v[jj+1, ji] * zv[jj  , ji] 
@@ -86,16 +86,13 @@ def cdfpsi(data_dir, u_file, u_var, v_file, v_var, **kwargs):
                               )
 
   # check periodicity
-  if (np.count_nonzero(zu[:, 0] - zu[:, npiglo-2]) == 0): # python indexing
-    if np.count_nonzero(zu[:, 0]) + np.count_nonzero(zu[:, npiglo-2]) == 0:
-      print("Bounded walls detected, will just be copying zeros")
-    else:
-      print("E-W periodicity detected, copying something non-trivial")
+  if (np.count_nonzero(glamt[0, 0] - glamt[0, npiglo-2]) == 0): # python indexing
+    print("E-W periodicity detected!")
     if not opt_dic["lperio"]:
       print("--> forcing lperio = True")
       opt_dic["lperio"] = True
   
-  if opt_dic["lperiod"]:
-    umod[:, npiglo-1] = umod[:, 1] # python indexing
+  if opt_dic["lperio"]:
+    absu[:, npiglo-1] = absu[:, 1] # python indexing
 
-  return (glamf, gphif, umod, opt_dic)
+  return (glamt, gphit, absu, opt_dic)
