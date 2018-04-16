@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
 #
 # subfunction for generating the modulus of the velocity
-# partly adapted from CDFTOOLS/cdfcurl:
+# partly adapted from CDFTOOLS/cdfcurl and CDFTOOLS/cdfspeed:
 #  !!======================================================================
-#  !!                     ***  PROGRAM  cdfabsu  ***
+#  !!                     ***  PROGRAM  cdfspeed  ***
 #  !!=====================================================================
 #  !!  ** Purpose : Compute current speed
 #  !!
 #  !!  ** Method  : Compute the 2D field absu from U and V velocity (on T point)
 #  !!
-#  !! History : new  : 04/2018  : J. Mak : Original code?
+#  !! History : new  : 04/2018  : J. Mak : "new" code though it turns out
+#  !!                                      cdfspeed does something similar...
 #  !!=====================================================================
 #
 
@@ -18,7 +19,7 @@ from netCDF4 import Dataset
 import copy
 from sys import exit
 
-def cdfabsu(data_dir, u_file, u_var, v_file, v_var, **kwargs):
+def cdfspeed(data_dir, u_file, u_var, v_file, v_var, **kwargs):
   """
   Compute (Absolute) Current Speed
 
