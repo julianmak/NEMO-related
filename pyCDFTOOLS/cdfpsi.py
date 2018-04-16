@@ -25,7 +25,7 @@
 #
 # warning: this is stripped down and does not yet include full functionality
 
-import numpy as np
+from numpy import zeros
 from netCDF4 import Dataset
 import copy
 from sys import exit
@@ -73,7 +73,6 @@ def cdfpsi(data_dir, u_file, u_var, v_file, v_var, **kwargs):
     npiglo  = cf_vfil.dimensions["x"].size
     npjglo  = cf_vfil.dimensions["y"].size
     npk     = cf_vfil.dimensions["depthv"].size
-    npt     = cf_vfil.dimensions["time_counter"].size
     zv      = cf_vfil.variables[v_var][opt_dic["kt"], :, :, :]
     if opt_dic["lg_vvl"]:
       e3v     = cf_vfil.varaibles["e3v"][opt_dic["kt"], :, :, :]
@@ -93,7 +92,6 @@ def cdfpsi(data_dir, u_file, u_var, v_file, v_var, **kwargs):
     npiglo  = cf_ufil.dimensions["x"].size
     npjglo  = cf_ufil.dimensions["y"].size
     npk     = cf_ufil.dimensions["depthu"].size
-    npt     = cf_ufil.dimensions["time_counter"].size
     zu      = cf_ufil.variables[u_var][opt_dic["kt"], :, :, :]
     if opt_dic["lg_vvl"]:
       e3u     = cf_ufil.variables["e3u"][opt_dic["kt"], :, :, :]
@@ -113,23 +111,23 @@ def cdfpsi(data_dir, u_file, u_var, v_file, v_var, **kwargs):
 
   # cumulative sum over depth
   if opt_dic["ll_v"]:
-    dtrpv = np.zeros(e1v.shape)
+    dtrpv = zeros(e1v.shape)
     for jk in range(npk):
         dtrpv += zv[jk, :, :] * e1v[:, :] * e3v[jk, :, :]
 
     # do zonal integration
-    dpsiv = np.zeros(e1v.shape)
+    dpsiv = zeros(e1v.shape)
     for ji in range(npiglo-2, 0, -1):
         dpsiv[:, ji] = dpsiv[:, ji+1] - dtrpv[:, ji]
 
     dpsi = copy.deepcopy(dpsiv)
   else:
-    dtrpu = np.zeros(e2u.shape)
+    dtrpu = zeros(e2u.shape)
     for jk in range(npk):
         dtrpu += zu[jk, :, :] * e2u[:, :] * e3u[jk, :, :]
 
     # do meridional integration
-    dpsiu = np.zeros(e2u.shape)
+    dpsiu = zeros(e2u.shape)
     for jj in range(1, npjglo):
         dpsiu[jj, :] = dpsiu[jj-1, :] - dtrpu[jj, :]
 

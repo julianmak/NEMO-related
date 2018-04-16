@@ -14,7 +14,7 @@
 #  !!=====================================================================
 #
 
-import numpy as np
+from numpy import zeros, sqrt
 from netCDF4 import Dataset
 import copy
 from sys import exit
@@ -74,11 +74,11 @@ def cdfspeed(data_dir, u_file, u_var, v_file, v_var, **kwargs):
   cf_vfil.close()
   
   # average the velocities onto the T points
-  absu = np.zeros((npjglo, npiglo))
+  absu = zeros((npjglo, npiglo))
   
   for ji in range(npiglo-1):
     for jj in range(npjglo-1):
-        absu[jj, ji] = np.sqrt(  ( (e1u[jj, ji+1] * zu[jj, ji  ] 
+        absu[jj, ji] = sqrt(  ( (e1u[jj, ji+1] * zu[jj, ji  ] 
                                   + e1u[jj, ji  ] * zu[jj, ji+1]) 
                                  / (e1u[jj, ji] + e1u[jj, ji+1]) ) ** 2
                               +  ( (e2v[jj+1, ji] * zv[jj  , ji] 
@@ -87,7 +87,7 @@ def cdfspeed(data_dir, u_file, u_var, v_file, v_var, **kwargs):
                               )
 
   # check periodicity
-  if (np.count_nonzero(glamt[0, 0] - glamt[0, npiglo-2]) == 0): # python indexing
+  if (glamt[0, 0] - glamt[0, npiglo-2] == 0): # python indexing
     print("E-W periodicity detected!")
     if not opt_dic["lperio"]:
       print("--> forcing lperio = True")

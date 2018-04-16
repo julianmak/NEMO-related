@@ -17,7 +17,7 @@
 #  !!----------------------------------------------------------------------
 #
 
-import numpy as np
+from numpy import zeros, pi, sin
 from netCDF4 import Dataset
 import copy
 from sys import exit
@@ -86,13 +86,13 @@ def cdfcurl(data_dir, u_file, u_var, v_file, v_var, **kwargs):
   cf_vfil.close()
   
   # check periodicity
-  if (np.count_nonzero(glamf[0, 0] - glamf[0, npiglo-2]) == 0): # python indexing
+  if (glamf[0, 0] - glamf[0, npiglo-2] == 0): # python indexing
     print("E-W periodicity detected!")
     if not opt_dic["lperio"]:
       print("--> forcing lperio = True")
       opt_dic["lperio"] = True
   
-  curl = np.zeros((npjglo, npiglo))
+  curl = zeros((npjglo, npiglo))
   
   for ji in range(npiglo-1):
     for jj in range(npjglo-1):
@@ -106,8 +106,8 @@ def cdfcurl(data_dir, u_file, u_var, v_file, v_var, **kwargs):
     curl[:, npiglo-1] = curl[:, 1] # python indexing
     
   if opt_dic["loverf"]:
-    dl_omega = (2 * np.pi / 86400.0)
-    dl_ff = 2 * dl_omega * np.sin(gphif * np.pi / 180.0)
+    dl_omega = (2 * pi / 86400.0)
+    dl_ff = 2 * dl_omega * sin(gphif * pi / 180.0)
     # avoid divide by zero
     curl[(dl_ff == 0)] = 0.0
     dl_ff[(dl_ff == 0)] = 1.0
