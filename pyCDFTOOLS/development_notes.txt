@@ -1,0 +1,59 @@
+development notes (Julian Mak)
+
+created 27 Apr
+
+%%%%%%%%%%  General   %%%%%%%%%%
+
+pyCDFTOOLS here is a hacked up python version of CDFTOOLS developed as part of 
+the DRAKKAR project (their GitHub at https://github.com/meom-group/CDFTOOLS).
+It only really works with NEMO data though the underlying algorithms are 
+transferrable even if the code is not.
+
+These codes are not necessarily faster / better / more accurate than CDFTOOLS,
+it's just a personal preference of mine to not like doing analyses through
+Fortran. It is likely also to be incomplete, as I will probably work on it from
+a when-needs-arise basis.
+
+The codes I/O are designed for data generated from NEMO 3.7/4.0 onwards. 
+The older data will probably still work but you will need to either (i) create
+a mesh_mask file, artificially or otherwise (NEMO/DOMAINcfg tool in the newer
+NEMO and run it for one time step with nn_mask > 0, number doesn't matter
+anymore), or (ii) artifically change the python files to read it the older
+"mesh_hgr", "mesh_zgr" and "mask" files.
+
+------  python things  ------
+
+I personally did most things through "anaconda". The packages needed are
+
+numpy
+  -- I thought about using f2py at some point to wrap Fortran code into Python,
+     but had compiler issues, and this got superseeded with numba/JIT
+
+netCDF4 (NEMO data is mostly in netCDF4)
+  -- some of the third party data (from NOC for example) is "masked", and it
+     means in the data loading, ".data" may need to be added to pull out arrays
+     that are not masked
+numba
+  -- jit(nopython = True) and similar compiles some routines as machine codes,
+     which is mostly used in big loops (otherwise it is grindingly slow)
+
+The notebooks use matplotlib, (for ORCA data) cartopy, iris, and some customised
+modules
+
+????????????????????????????????????????????????????????????????????????????????
+
+TO DO (updated 27 Apr 2018):
+
+* Add TEOS10 for working out density in eos.py (get it off wherever Fabien put 
+  it on the internet)
+  
+* Other options in cdfmocsig
+
+* Wrapper script to do time-averaging in density co-ordinates (make sure loaded
+  data is instantaneous ones!)
+  
+* Rotation of vectors to deal with e.g. GYRE configuration
+
+* Ice?
+
+
