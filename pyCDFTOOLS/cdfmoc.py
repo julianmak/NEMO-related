@@ -38,6 +38,7 @@
 #  !!    https://www.godae-oceanview.org/documents/q/action-edit/ref-264/parent-261/
 #  !!----------------------------------------------------------------------
 
+from numba import jit
 from numpy import zeros, argmax, unravel_index
 from netCDF4 import Dataset
 
@@ -79,7 +80,7 @@ def cdfmoc(data_dir, v_file, v_var, **kwargs):
   npk     = cf_vfil.dimensions["depthv"].size
   zv      = cf_vfil.variables[v_var][opt_dic["kt"], :, :, :]
   if opt_dic["lg_vvl"]:
-    e3v     = cf_vfil.varaibles["e3v"][opt_dic["kt"], :, :, :]
+    e3v     = cf_vfil.variables["e3v"][opt_dic["kt"], :, :, :]
   cf_vfil.close()
   
   cn_mask = Dataset(data_dir + "mesh_mask.nc")
@@ -93,6 +94,7 @@ def cdfmoc(data_dir, v_file, v_var, **kwargs):
   
   if opt_dic["ldec"]:
     print("NOT DONE THIS YET! -- 16 APR 2018")
+    return (0.0, 0.0, 0.0, opt_dic)
 
 #  --------------------------
 #  0) Create a dummy latitude to output
@@ -101,14 +103,22 @@ def cdfmoc(data_dir, v_file, v_var, **kwargs):
   rdumlat = gphiv[:, iloc[1]]
   
 #  --------------------------
-#  1) Compute total MOC: dmoc
+#  1) Compute total MOC: dmoc 
+#     [loop done using jit to speed it up (abou 60 times faster)]
 #  --------------------------
+  dmoc = dmoc_loop(e1v, e3v, vmask, zv, npk, npjglo, npiglo)
+
+  return (gdepw, rdumlat, dmoc, opt_dic)
+  
+#-------------------------------------------------------------------------------
+
+@jit(nopython = True)
+def dmoc_loop(e1v, e3v, vmask, zv, npk, npjglo, npiglo):
+
   dmoc = zeros((npk, npjglo)) # change this if having the multiple basin decomposition
   
   # integrate 'zonally' (along i-coordinate)
   for jk in range(npk):
-    if (jk % 10) == 0:
-      print("processing in the slow loop, jk = %i / %g" % (jk, npk))
     for jj in range(npjglo):
       for ji in range(npiglo):
         dmoc[jk, jj] -= e1v[jj, ji] * e3v[jk, jj, ji] * vmask[jk, jj, ji] * zv[jk, jj, ji]
@@ -117,5 +127,6 @@ def cdfmoc(data_dir, v_file, v_var, **kwargs):
   for jj in range(npjglo):
     for jk in range(npk-2, 0, -1): # python indexing
       dmoc[jk, jj] = dmoc[jk + 1, jj] + dmoc[jk, jj] / 1.0e6
+      
+  return dmoc
 
-  return (gdepw, rdumlat, dmoc, opt_dic)
