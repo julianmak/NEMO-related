@@ -104,7 +104,7 @@ def cdfmoc(data_dir, v_file, v_var, **kwargs):
   
 #  --------------------------
 #  1) Compute total MOC: dmoc 
-#     [loop done using jit to speed it up (abou 60 times faster)]
+#     [loop done using jit to speed it up (about 60 times faster)]
 #  --------------------------
   dmoc = dmoc_loop(e1v, e3v, vmask, zv, npk, npjglo, npiglo)
 
@@ -117,11 +117,13 @@ def dmoc_loop(e1v, e3v, vmask, zv, npk, npjglo, npiglo):
 
   dmoc = zeros((npk, npjglo)) # change this if having the multiple basin decomposition
   
+  zv *= vmask # mask the array here
+  
   # integrate 'zonally' (along i-coordinate)
   for jk in range(npk):
     for jj in range(npjglo):
       for ji in range(npiglo):
-        dmoc[jk, jj] -= e1v[jj, ji] * e3v[jk, jj, ji] * vmask[jk, jj, ji] * zv[jk, jj, ji]
+        dmoc[jk, jj] -= e1v[jj, ji] * e3v[jk, jj, ji] * zv[jk, jj, ji]
         
   # integrate vertically from bottom to surface
   for jj in range(npjglo):
