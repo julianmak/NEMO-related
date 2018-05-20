@@ -20,7 +20,6 @@
 from numpy import zeros, pi, sin
 from netCDF4 import Dataset
 import copy
-from sys import exit
 
 def cdfcurl(data_dir, u_file, u_var, v_file, v_var, **kwargs):
   """

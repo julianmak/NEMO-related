@@ -17,7 +17,6 @@
 from numpy import zeros, sqrt
 from netCDF4 import Dataset
 import copy
-from sys import exit
 
 def cdfspeed(data_dir, u_file, u_var, v_file, v_var, **kwargs):
   """

@@ -28,7 +28,6 @@
 from numpy import zeros
 from netCDF4 import Dataset
 import copy
-from sys import exit
 
 def cdfpsi(data_dir, u_file, u_var, v_file, v_var, **kwargs):
   """
