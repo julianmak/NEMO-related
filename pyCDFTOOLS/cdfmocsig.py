@@ -38,7 +38,7 @@ import numpy as np
 
 def cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs):
   """
-  Compute (Absolute) Current Speed
+  Compute the MOC in density co-ordinates
 
   Needs associated mesh_mask.nc file in the same data folder
   
@@ -53,6 +53,7 @@ def cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs):
   
   Optional arguments (as of 22 Apr 2018):
     lprint   = True   for printing out variable names in netcdf file
+    lverb    = True   for printing out more information
     lg_vvl   = True   for using s-coord (time-varying metric)
     ldec     = True   decompose the MOC into some components
     leiv     = True   for adding the eddy induced velocity component
@@ -66,6 +67,7 @@ def cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs):
   # some defaults for optional arguments
   opt_dic = {"kt"     : 0,
              "lprint" : False,
+             "lverb"  : False,
              "lg_vvl" : False,
              "ldec"   : False,
              "leiv"   : False,
@@ -77,73 +79,37 @@ def cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs):
     opt_dic[key] = kwargs[key]
 
   # open some files and pull variables out
-#  cf_vfil = Dataset(data_dir + v_file)
-#  if opt_dic["lprint"]:
-#    print(cf_vfil)
-#  npiglo  = cf_vfil.dimensions["x"].size
-#  npjglo  = cf_vfil.dimensions["y"].size
-#  npk     = cf_vfil.dimensions["depthv"].size
-#  zv      = cf_vfil.variables[v_var][opt_dic["kt"], :, :, :]
-#  if opt_dic["lg_vvl"]:
-#    e3v     = cf_vfil.variables["e3v"][opt_dic["kt"], :, :, :]
-#  if opt_dic["leiv"]:
-#    # load and add the contribution to zv
-#    zeiv    = cf_vfil.variables[opt_dic["eivv_var"]][opt_dic["kt"], :, :, :]
-#    zv += zeiv
-#  cf_vfil.close()
-
   cf_vfil = Dataset(data_dir + v_file)
   if opt_dic["lprint"]:
     print(cf_vfil)
   npiglo  = cf_vfil.dimensions["x"].size
   npjglo  = cf_vfil.dimensions["y"].size
   npk     = cf_vfil.dimensions["depthv"].size
-  zv      = cf_vfil.variables[v_var][opt_dic["kt"], :, :, :].data
+  zv      = cf_vfil.variables[v_var][opt_dic["kt"], :, :, :]
   if opt_dic["lg_vvl"]:
     e3v     = cf_vfil.variables["e3v"][opt_dic["kt"], :, :, :]
   if opt_dic["leiv"]:
+    if opt_dic["lverb"]:
+      print("using eddy induced velocity too")
     # load and add the contribution to zv
     zeiv    = cf_vfil.variables[opt_dic["eivv_var"]][opt_dic["kt"], :, :, :]
-    zeiv    = cf_vfil.variables[opt_dic["eivv_var"]][opt_dic["kt"], :, :, :].data
-    print("using eddy induced velocity too")
     zv += zeiv
   cf_vfil.close()
   
-#  cf_tfil = Dataset(data_dir + t_file)
-#  if opt_dic["lprint"]:
-#    print(cf_tfil)
-#  zt      = cf_tfil.variables[t_var][opt_dic["kt"], :, :, :]
-#  zs      = cf_tfil.variables[s_var][opt_dic["kt"], :, :, :]
-#  cf_tfil.close()
   cf_tfil = Dataset(data_dir + t_file)
   if opt_dic["lprint"]:
     print(cf_tfil)
-  zt      = cf_tfil.variables[t_var][opt_dic["kt"], :, :, :].data
-  zs      = cf_tfil.variables[s_var][opt_dic["kt"], :, :, :].data
+  zt      = cf_tfil.variables[t_var][opt_dic["kt"], :, :, :]
+  zs      = cf_tfil.variables[s_var][opt_dic["kt"], :, :, :]
   cf_tfil.close()
   
-#  cn_mask = Dataset(data_dir + "mesh_mask.nc")
-#  e1v     = cn_mask.variables["e1v"][0, :, :]
-#  gphiv   = cn_mask.variables["gphiv"][0, :, :]
-#  vmask   = cn_mask.variables["vmask"][0, :, :, :]
-#  tmask   = cn_mask.variables["tmask"][0, :, :, :]
-#  if not opt_dic["lg_vvl"]:
-#    e3v     = cn_mask.variables["e3v_0"][opt_dic["kt"], :, :, :]
-#  cn_mask.close()
-  
-  cn_mask = Dataset(data_dir + "mask.nc")
+  cn_mask = Dataset(data_dir + "mesh_mask.nc")
+  e1v     = cn_mask.variables["e1v"][0, :, :]
+  gphiv   = cn_mask.variables["gphiv"][0, :, :]
   vmask   = cn_mask.variables["vmask"][0, :, :, :]
   tmask   = cn_mask.variables["tmask"][0, :, :, :]
-  cn_mask.close()
-  
-  cn_mask = Dataset(data_dir + "mesh_hgr.nc")
-  e1v     = cn_mask.variables["e1v"][0, :, :]
-  gphiv   = cn_mask.variables["gphiv"][0, :, :].data
-  cn_mask.close()
-  
-  cn_mask = Dataset(data_dir + "mesh_zgr.nc")
   if not opt_dic["lg_vvl"]:
-    e3v     = cn_mask.variables["e3v"][opt_dic["kt"], :, :, :].data
+    e3v     = cn_mask.variables["e3v_0"][0, :, :, :]
   cn_mask.close()
   
   if opt_dic["ldec"]:
@@ -156,8 +122,9 @@ def cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs):
   
   # make the density vector
   sigma = sigmin + (linspace(1, nbins, nbins) - 0.5) * sigstp
-  print("min density for binning = %g" % sigma[0])
-  print("max density for binning = %g" % sigma[nbins - 1])
+  if opt_dic["lverb"]:
+    print("min density for binning = %g" % sigma[0])
+    print("max density for binning = %g" % sigma[nbins - 1])
   
   # grab a latitude vector
   iloc = unravel_index(argmax(gphiv, axis = None), gphiv.shape)
@@ -173,8 +140,11 @@ def cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs):
   dmoc = zeros((nbins, npjglo))
   
   for jk in range(0, npk - 1):
-    if (jk % 10) == 0:
-      print("in the slow k loop, jk = %g / %g..." % (jk, npk) )
+    if opt_dic["lverb"]:
+      if jk == 0:
+        print("slow k loop, progress = ", end = "")
+      if (jk % 10) == 0:
+        print("%.2f %%..." % (jk / npk), end = "")
       
     #TODO (22 Apr): average T and S onto V point? (skip for now)
     if opt_dic["lntr"]:
@@ -231,6 +201,42 @@ def dmoc_loop(dmoc, zv_weight, ibin, nbins, ij1, ij2, npjglo, npiglo):
         dmoc[jbin, jj] += dmoc_tmp[jbin, ji]
   
   return dmoc
+  
+#-------------------------------------------------------------------------------
+
+def cdfmocsig_tave(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs):
+  """
+  Compute the MOC in density co-ordinates as cdfmocsig, but grabs every time 
+  entry (assumed to be equally spaced) and time-average it
+    
+  Returns:
+    sigma (density bins), latV (rdumlat), dmoc for plotting, opt_dic for record
+  """
+  
+  # load the relevant V file and see how many entries there are
+  cf_vfil = Dataset(data_dir + v_file)
+  nt = cf_vfil.dimensions["time_counter"].size
+  cf_vfil.close()
+  
+  print("%g frames found, cycling through them..." % nt)
+  print(" ")
+  
+  # cycle through every single time entry
+  for kt in range(nt):
+    kwargs["kt"] = kt
+    if kt == 0:
+      print("working at frame %g..." % (kt + 1), end = "")
+      sigma, rdumlat, dmoc_temp, opt_dic = cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs)
+      dmoc = dmoc_temp / nt
+    else:
+      print("%g..." % (kt + 1), end = "")
+      _, _, dmoc_temp, _ = cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs)
+      dmoc += dmoc_temp / nt
+  
+  print(" ")
+  print("returning time-averaged field")
+  
+  return (sigma, rdumlat, dmoc, opt_dic)
   
 #-------------------------------------------------------------------------------
   
