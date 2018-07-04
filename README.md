@@ -1,7 +1,8 @@
 # NEMO-related
 
-GitHub repository of me personal homebrew of NEMO (> ver 3.6) related content. See 
-https://nemo-related.readthedocs.io/en/latest/ for description
+GitHub repository of me personal homebrew of NEMO (> ver 3.6) related content. 
+<a href="https://nemo-related.readthedocs.io/en/latest/" target="_blank">Click here</a> for documentation of 
+contents
 
 Disclaimer!!! The Python codes for dealing with NEMO data are mostly adapted from pre-existing
 tools (there should be documentation from "where"; if there isn't please let me know.) I don't claim to have done 
