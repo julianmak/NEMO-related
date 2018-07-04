@@ -31,7 +31,7 @@
 from pyCDFTOOLS import eos
 
 from numba import jit, int32 # need explicit type for use within jit
-from numpy import zeros, argmax, unravel_index, linspace, maximum, minimum
+from numpy import zeros, argmax, unravel_index, linspace, maximum, minimum, where
 from netCDF4 import Dataset
 
 import numpy as np
@@ -60,6 +60,7 @@ def cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs):
       eivv_var = string for EIV-v variable name
     lisodep  = True   (not yet implemented) output zonal averaged isopycnal depth
     lntr     = True   (not yet implemented) do binning with neutral density
+    lbas     = ???
     
   Returns:
     sigma (density bins), latV (rdumlat), dmoc for plotting, opt_dic for record
@@ -72,7 +73,8 @@ def cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs):
              "ldec"   : False,
              "leiv"   : False,
              "lisodep": False,
-             "lntr"   : False}
+             "lntr"   : False,
+             "lbas"   : False}
 
   # overwrite the options by cycling through the input dictionary
   for key in kwargs:
@@ -108,12 +110,20 @@ def cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs):
   gphiv   = cn_mask.variables["gphiv"][0, :, :]
   vmask   = cn_mask.variables["vmask"][0, :, :, :]
   tmask   = cn_mask.variables["tmask"][0, :, :, :]
+  # gdep only used with lisodep, but load to keep so subroutine does not need 
+  # variable number of outputs
+  gdep    =-cn_mask.variables["gdept_1d"][0, :]
   if not opt_dic["lg_vvl"]:
     e3v     = cn_mask.variables["e3v_0"][0, :, :, :]
   cn_mask.close()
   
+  # flags for MOC decomposition
   if opt_dic["ldec"]:
     print("NOT DONE THIS YET! -- 16 APR 2018")
+    
+  # flags for MOC splitting into variables
+  if opt_dic["lbas"]:
+    print("NOT DONE THIS YET! -- 29 MAY 2018")
 
 #  --------------------------
 #  0) Initialisations
@@ -133,11 +143,19 @@ def cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs):
   # work out areas
   zarea = e1v * e3v
   
+  if opt_dic["lbas"]:
+    print("NOT DONE THIS YET! -- 29 MAY 2018")
+    nbasins = 5
+  else:
+    nbasins = 1
+  
 #  --------------------------
 #  1) Bin and integrate across density classes to form dmoc
 #     [horizontal loop done using jit to speed it up (grindingly slow otherwise)]
 #  --------------------------
-  dmoc = zeros((nbins, npjglo))
+  dmoc = zeros((nbasins, nbins, npjglo))
+  depi = zeros((nbasins, nbins, npjglo)) # these stay zeros if lisodep = False
+  wdep = zeros((nbasins, nbins, npjglo))
   
   for jk in range(0, npk - 1):
     if opt_dic["lverb"]:
@@ -153,7 +171,7 @@ def cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs):
     else:
       dens = eos.sigmai_dep(zt[jk, :, :], zs[jk, :, :], pref)
     
-    zttmp = dens * tmask[jk, :, :]
+    zttmp  = dens * tmask[jk, :, :]
     
     # find bin numbers
     ibin = (zttmp - sigmin) / sigstp
@@ -163,44 +181,75 @@ def cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs):
     # NOT IMPLEMENTED YET
     ij1, ij2 = 1, npjglo - 1 # python indexing
     
-    zv_weight = zv[jk, :, :] * zarea[jk, :, :]
-    
     # sum up over the density classes
     # routine takes dmoc as an input and adds to it, so no += required
-    dmoc = dmoc_loop(dmoc, zv_weight, ibin, nbins, ij1, ij2, npjglo, npiglo)
+    dmoc = dmoc_loop(dmoc, zv[jk, :, :], zarea[jk, :, :], ibin, 
+                     nbins, ij1, ij2, npjglo, npiglo, nbasins)
+                     
+    # lisodep routines
+    if opt_dic["lisodep"]:
+      depi, wdep = isodep_loop(depi, wdep, zarea[jk, :, :], ibin, 
+                               gdep[jk], tmask[jk, :, :],
+                               nbins, ij1, ij2, npjglo, npiglo, nbasins)
 
   # Integrate across the bins from high to low density
-  dmoc[nbins - 1, :] /= 1.0e6
+  dmoc[:, nbins - 1, :] /= 1.0e6
   for jbin in range(nbins - 1, 0, -1):
-    dmoc[jbin - 1, :] = dmoc[jbin, :] + dmoc[jbin - 1, :] / 1.0e6
+    dmoc[:, jbin - 1, :] = dmoc[:, jbin, :] + dmoc[:, jbin - 1, :] / 1.0e6
+    
+  if opt_dic["lisodep"]:
+    depi = where(wdep != 0, depi / wdep, 0)
 
-  return (sigma, rdumlat, dmoc, opt_dic)
+  return (sigma, depi, rdumlat, dmoc, opt_dic)
   
 #-------------------------------------------------------------------------------
 @jit(nopython = True)
-def dmoc_loop(dmoc, zv_weight, ibin, nbins, ij1, ij2, npjglo, npiglo):
+def dmoc_loop(dmoc, zv, zarea, ibin, 
+              nbins, ij1, ij2, npjglo, npiglo, nbasins):
   
   # Do the binning and convert k into sigma
-  
   for jj in range(ij1, ij2):
     dmoc_tmp = zeros((nbins, npiglo))
     for ji in range(1, npiglo - 1):
       # cycle through the indices and bin according to density classes
       ib = ibin[jj, ji] - 1 # python indexing
       
-      dmoc_tmp[ib, ji] -= zv_weight[jj, ji]
-    
-#      if opt_dic["lisodep"]:
-#        print("diagnosing isopycnal depth not implemented yet! (22 Apr)")
-#        return (0.0, 0.0, 0.0, opt_dic)
+      dmoc_tmp[ib, ji] -= zv[jj, ji] * zarea[jj, ji]
       
     # integrate 'zonally' (along i-coordingate)
     # add to dmoc
-    for jbin in range(0, nbins):
-      for ji in range(1, npiglo - 1):
-        dmoc[jbin, jj] += dmoc_tmp[jbin, ji]
-  
+    for jbasin in range(nbasins):
+      for jbin in range(0, nbins):
+        for ji in range(1, npiglo - 1):
+          dmoc[jbasin, jbin, jj] += dmoc_tmp[jbin, ji]
+          
   return dmoc
+  
+#-------------------------------------------------------------------------------
+@jit(nopython = True)
+def isodep_loop(depi, wdep, zarea, ibin, gdep, itmask,
+                nbins, ij1, ij2, npjglo, npiglo, nbasins):
+  
+  # Do the binning and convert k into sigma
+  for jj in range(ij1, ij2):
+    depi_tmp = zeros((nbins, npiglo))
+    wdep_tmp = zeros((nbins, npiglo))
+    for ji in range(1, npiglo - 1):
+      # cycle through the indices and bin according to density classes
+      ib = ibin[jj, ji] - 1 # python indexing
+      
+      depi_tmp[ib, ji] += gdep * zarea[jj, ji] * itmask[jj, ji]
+      wdep_tmp[ib, ji] +=        zarea[jj, ji] * itmask[jj, ji]
+      
+    # integrate 'zonally' (along i-coordingate)
+    # add to isodep variables
+    for jbasin in range(nbasins):
+      for jbin in range(0, nbins):
+        for ji in range(1, npiglo - 1):
+          depi[jbasin, jbin, jj] += depi_tmp[jbin, ji]
+          wdep[jbasin, jbin, jj] += wdep_tmp[jbin, ji]
+          
+  return (depi, wdep)
   
 #-------------------------------------------------------------------------------
 
@@ -226,17 +275,19 @@ def cdfmocsig_tave(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs
     kwargs["kt"] = kt
     if kt == 0:
       print("working at frame %g..." % (kt + 1), end = "")
-      sigma, rdumlat, dmoc_temp, opt_dic = cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs)
+      sigma, depi_temp, rdumlat, dmoc_temp, opt_dic = cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs)
       dmoc = dmoc_temp / nt
+      depi = depi_temp / nt
     else:
       print("%g..." % (kt + 1), end = "")
-      _, _, dmoc_temp, _ = cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs)
+      _, depi_temp, _, dmoc_temp, _ = cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs)
       dmoc += dmoc_temp / nt
+      depi += depi_temp / nt
   
   print(" ")
   print("returning time-averaged field")
   
-  return (sigma, rdumlat, dmoc, opt_dic)
+  return (sigma, depi, rdumlat, dmoc, opt_dic)
   
 #-------------------------------------------------------------------------------
   

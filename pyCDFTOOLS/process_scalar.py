@@ -4,8 +4,9 @@
 #  !!======================================================================
 #  !!                     ***  PROGRAM  process_scalar  ***
 #  !!=====================================================================
-#  !!  ** Purpose : (i)  read "scalar" data and dump it out into a text file
-#  !!               (ii) read the text file accordingly
+#  !!  ** Purpose : (i)   read "scalar" data and dump it out into a text file
+#  !!               (ii)  read the text file accordingly
+#  !!               (iii) read the transport data
 #  !!
 #  !!  ** Method  : python native, brute force coded at the moment
 #  !!
@@ -41,6 +42,11 @@ def scalar_to_txt(data_dir, query = False):
   file_list = []
   for file in glob.glob(data_dir + "*scalar*.nc"):
     file_list.append(file) 
+    
+  if not file_list:
+    print("no files grabbed, are you in the right directory?")
+    print("no files grabbed, are you in the right directory?")
+    print("no files grabbed, are you in the right directory?")
 
   # sort it according to the timestamps
   file_list.sort()
@@ -147,6 +153,11 @@ def txt_to_array(data_dir, key, query = False):
   for file in glob.glob(data_dir + "*scalar*.txt"):
     file_list.append(file)
     
+  if not file_list:
+    print("no files grabbed, are you in the right directory?")
+    print("no files grabbed, are you in the right directory?")
+    print("no files grabbed, are you in the right directory?")
+    
   # sort it according to the timestamps
   file_list.sort()
 
@@ -186,3 +197,60 @@ def txt_to_array(data_dir, key, query = False):
   data_array = float64(asarray(data_array))
   
   return (time, data_array)
+  
+#-------------------------------------------------------------------------------
+
+def read_vol_transport(data_dir, key):
+  """
+  Given a data_dir, process all files with the "volume_transport*" match
+  and spit out some of its contents
+
+  give it a unique case sensitive key (look into the file itself to check)
+  
+  Inputs:
+    data_dir = string for data directory
+    key      = string for data to grab
+    
+  Optional input:
+    query    = True   to return the key names
+    
+  Returns:
+    time, data_array (both as float64)
+  """
+  
+  # grab the relevant filenames
+  file_list = []
+  for file in glob.glob(data_dir + "volume_transport*"):
+      file_list.append(file) 
+      
+  if not file_list:
+    print("no files grabbed, are you in the right directory?")
+    print("no files grabbed, are you in the right directory?")
+    print("no files grabbed, are you in the right directory?")
+
+  # sort it according to the timestamps
+  file_list.sort()
+
+  data_dump = []
+  for filename in file_list:
+      with open(filename) as f:
+          for line in f:
+              if key in line: # this needs to match case for case
+                  data_dump.append(line)
+                  
+  # define some lists to dump entries, then turn them into array
+  time = []
+  data_array = []
+  for i in range(1, len(data_dump), 2): # pick out the total line
+      time.append(int(data_dump[i].split()[0][0:-4])) # strip out the last four digits
+      data_array.append(float(data_dump[i].split()[11]))
+
+  time       = asarray(time)
+  data_array = asarray(data_array)
+  
+  return (time, data_array)
+  
+#-------------------------------------------------------------------------------
+
+
+
