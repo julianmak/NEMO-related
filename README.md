@@ -1,6 +1,7 @@
 # NEMO-related
 
-Personal homebrew collection of NEMO (> ver 3.6) related content.
+GitHub repository of me personal homebrew of NEMO (> ver 3.6) related content. See 
+https://nemo-related.readthedocs.io/en/latest/ for description
 
 Disclaimer!!! The Python codes for dealing with NEMO data are mostly adapted from pre-existing
 tools (there should be documentation from "where"; if there isn't please let me know.) I don't claim to have done 
@@ -15,5 +16,6 @@ If you do see mistakes, please do contact me at julian.mak@physics.ox.ac.uk
 - [ ] create/upload hacked CDFtool commands into Python (probably only of the ones I actually use)
 
 # key updates:
+* 04 Jul 2018 -- added a Read The Docs document
 * 08 Apr 2018 -- initial commit of a "pyCDFTOOLS" with sample Jupyter notebooks
 * 16 Mar 2018 -- opening of repository as a move to get me to actually do something...
