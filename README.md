@@ -17,6 +17,6 @@ If you do see mistakes, please do contact me at julian.mak@physics.ox.ac.uk
 - [ ] create/upload hacked CDFtool commands into Python (probably only of the ones I actually use)
 
 # key updates:
-* 04 Jul 2018 -- added a Read The Docs document
+* 04 Jul 2018 -- added a Read The Docs document [(Click here)](https://nemo-related.readthedocs.io/en/latest/)
 * 08 Apr 2018 -- initial commit of a "pyCDFTOOLS" with sample Jupyter notebooks
 * 16 Mar 2018 -- opening of repository as a move to get me to actually do something...
