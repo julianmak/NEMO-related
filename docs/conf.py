@@ -19,7 +19,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'NEMO'
+project = 'J Mak NEMO notes'
 copyright = '2018, Julian Mak'
 author = 'Julian Mak'
 
@@ -40,6 +40,8 @@ release = ''
 # ones.
 extensions = [
     'sphinx.ext.mathjax',
+    'sphinx.ext.viewcode',
+#    'sphinxcontrib.bibtex',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -75,7 +77,15 @@ pygments_style = 'sphinx'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'alabaster'
+# html_theme = 'alabaster'
+
+import sphinx_rtd_theme
+
+html_theme = "sphinx_rtd_theme"
+
+#html_theme_options = {'collapse_navigation': True}
+
+html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -102,7 +112,7 @@ html_static_path = ['_static']
 # -- Options for HTMLHelp output ---------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'NEMOdoc'
+htmlhelp_basename = 'jmakNEMOdoc'
 
 
 # -- Options for LaTeX output ------------------------------------------------
@@ -129,7 +139,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'NEMO.tex', 'NEMO Documentation',
+    (master_doc, 'JMak_NEMO_notes.tex', 'J Mak NEMO notes',
      'Julian Mak', 'manual'),
 ]
 
@@ -139,7 +149,7 @@ latex_documents = [
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
 man_pages = [
-    (master_doc, 'nemo', 'NEMO Documentation',
+    (master_doc, 'jmak_nemo_notes', 'J Mak NEMO notes',
      [author], 1)
 ]
 
@@ -150,8 +160,8 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'NEMO', 'NEMO Documentation',
-     author, 'NEMO', 'One line description of project.',
+    (master_doc, 'JMak_NEMO_notes', 'J Mak NEMO notes',
+     author, 'NEMO', 'Notes and codes relating to NEMO',
      'Miscellaneous'),
 ]
 
