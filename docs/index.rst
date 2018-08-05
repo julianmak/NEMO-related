@@ -7,9 +7,9 @@ Julian's NEMO notes and codes
 =============================
 
 Homebrew collection of NEMO (> ver 3.6) related content, mostly existing here
-for my own personal benefit. Including compilation notes, analyses codes, and
-eventually some GEOMETRIC and its NEMO implementation in here too. Appropriate
-disclaimers in the individual sections themselves.
+for reminding myself the details (of which there are many). Includes compilation
+notes, analyses codes, and eventually some GEOMETRIC and its NEMO implementation
+in here too. Appropriate disclaimers in the individual sections themselves.
 
 I can be contacted at julian.mak@physics.ox.ac.uk regarding the modifying /
 adding to the content here.
@@ -22,7 +22,6 @@ adding to the content here.
    using_nemo/using_nemo
    GEOMETRIC/geometric
    adding_content/adding_content
-
 
 Key updates:
 ============
