@@ -3,16 +3,37 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Compilation notes
-=================
+NEMO compilation notes
+======================
+
+Personally I prefer doing small bits of code testing on a small configuration
+(normally GYRE in NEMO) so I have tried to get NEMO working on a local machine,
+largely following the instructions from the *NEMO forge* (**link to put in**)
+While it is fairly straightforward on a supported cluster/supercomputer (e.g.
+`NOCL ARCHER guide
+<https://nemo-nocl.readthedocs.io/en/latest/work_env/archer.html>`_) I have
+found it to be a bit temperamental on a local machine where there can be
+compatibility issues between compilers and packages. Here are some things I have
+done to get NEMO working on my laptop with ``gcc-4.9`` for other reasons; my
+``~/.bashrc`` has the following added:
+
+.. code-block:: bash
+
+  export CC=/usr/bin/gcc-4.9
+  export CXX=/usr/bin/g++-4.9
+  export FC=/usr/bin/gfortran-4.9
+  export F77=/usr/bin/gfortran-4.9
+  export CPP=/usr/bin/cpp-4.9
+  
+which overrides the default ``gcc5.4`` on my computer.
 
 .. toctree::
    :maxdepth: 2
    :caption: Compilation notes:
    
-   xios.rst
-   nemo.rst
-
-testing
+   nemo36.rst
+   nemo37.rst
+   nemo40.rst
+   packages.rst
 
 
