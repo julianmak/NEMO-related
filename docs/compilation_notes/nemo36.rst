@@ -14,8 +14,8 @@ NetCDF4 and a MPI bindings) are configured to be consistent with the compilers.
 See :ref:`here <sec:other-pack>` to check whether the binaries exist, where they
 are, and how they might be installed.
 
-XIOS1.0 (svn v703)
-------------------
+XIOS 1.0 (svn v703)
+-------------------
 
 To use NEMO you probably do need `XIOS <http://forge.ipsl.jussieu.fr/ioserver>`_
 to do the I/O. The instructions follow the one given in the `XIOS instructions
@@ -162,8 +162,8 @@ are binaries in ``xios1.0/bin/`` which NEMO will call.
   example the instructions on the `NOCL ARCHER guide
   <https://nemo-nocl.readthedocs.io/en/latest/work_env/archer.html>`_.
 
-NEMO3.6 (svn v6800)
--------------------
+NEMO 3.6 (svn v6800)
+--------------------
 
 Check out a version of NEMO. I have another folder separate to the XIOS folders
 to contain the NEMO codes and binaries:
