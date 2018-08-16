@@ -8,8 +8,8 @@
 detailed log of generating arch-gfortran_local.fcm
 ==================================================
 
-Log is longer than it needs to be to highlight some possible errors that could
-be thrown up. The following is sort of adapting a version of the fcm file that
+Log is longer than it needs to be to highlight what some of the errors that
+could arise looks like. The following is based what exists in the fcm file that
 works on ARCHER (e.g. `NOCL ARCHER guide
 <https://nemo-nocl.readthedocs.io/en/latest/work_env/archer.html>`_). 
 
@@ -87,7 +87,7 @@ Compile with ``./makenemo -n GYRE_testing clean_config && ./makenemo -r GYRE -n 
   Error: Invalid character in name at (1)
 
 This is saying that the Fortran interpreter is not recognising the formatting.
-This is fixed by adding a ``-cpp`` flag:
+This is fixed by adding a ``-cpp`` flag to the Fortran compiler:
 
 .. code-block :: none
 
@@ -115,15 +115,16 @@ characters a line should have in Fortran). Fix this by adding
 XIOS calling
 ------------
 
-Deals with that, but now it stops with:
+Dealing with the line length issue, now it stops with:
 
 .. code-block :: none
 
   /home/julian/testing/nemo-6800/nemo6800/NEMOGCM/CONFIG/GYRE_testing/BLD/ppsrc/nemo/iom.f90:76.7:
 
    USE xios
+   1
    
-XIOS path is not added so add in the following keys:
+XIOS path is not provided so add in the following keys:
 
 .. code-block :: none
 
@@ -135,7 +136,7 @@ XIOS path is not added so add in the following keys:
   %USER_INC            %XIOS_INC %NCDF_INC
   %USER_LIB            %XIOS_LIB %NCDF_LIB
 
-Change the ``%XIOS_HOME`` to where XIOS1.0 is installed.
+Change ``%XIOS_HOME`` to where XIOS1.0 is installed.
 
 C++ linking
 -----------
@@ -152,10 +153,10 @@ Passes the XIOS flag and now something like this pops up:
   
 This is one where having a log is useful. A whole load of error pops up to say
 the C++ files are not being interpreted, to do with a linker error (probably
-easiest to scroll down from top rather than up from bottom actually). Normally
-one might expect that adding the ``-lstdc++`` flag to ``%LDFLAGS`` would work
-but it doesn't for whatever reason. The ``-lstdc++`` flag seems to need to go
-**right at the end** of the command line, which meant I did the following:
+easiest to scroll down from top rather than up from bottom). Normally one might
+expect that adding the ``-lstdc++`` flag to ``%LDFLAGS`` would work but it
+doesn't for whatever reason. The ``-lstdc++`` flag seems to need to go **right
+at the end** of the command line, which meant I did the following:
 
 .. code-block :: none
 
@@ -167,7 +168,7 @@ MPI errors
 ----------
 
 Turns out actually there are two errors that get thrown up previously, with the
-linker error dominating the output. Sorting the linker one gives something like
+linker error dominating the output. Getting with of C++ one gives something like
 the following errors:
 
 .. code-block :: none

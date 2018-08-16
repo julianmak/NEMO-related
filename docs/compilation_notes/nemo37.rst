@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-NEMO
-====
+NEMO 3.7(?) + XIOS 2.0
+======================
 
 testing
 

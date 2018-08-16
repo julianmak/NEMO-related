@@ -8,14 +8,18 @@ NEMO compilation notes
 
 Personally I prefer doing small bits of code testing on a small configuration
 (normally GYRE in NEMO) so I have tried to get NEMO working on a local machine,
-largely following the instructions from the *NEMO forge* (**link to put in**)
+largely following the instructions from the `NEMO forge
+<http://forge.ipsl.jussieu.fr/nemo/wiki/Users/ModelInstall>`_; please consult
+that page first as the information on there should be considered the
+authoritative version. 
+
 While it is fairly straightforward on a supported cluster/supercomputer (e.g.
-`NOCL ARCHER guide
-<https://nemo-nocl.readthedocs.io/en/latest/work_env/archer.html>`_) I have
-found it to be a bit temperamental on a local machine where there can be
-compatibility issues between compilers and packages. Here are some things I have
-done to get NEMO working on my laptop with ``gcc-4.9`` for other reasons; my
-``~/.bashrc`` has the following added:
+first try following `NOCL ARCHER guide
+<https://nemo-nocl.readthedocs.io/en/latest/work_env/archer.html>`_) it can be a
+bit temperamental on a local machine a range of compatibility issues between
+compilers and packages can surface. Here are some things I have done to get NEMO
+working on my laptop with ``gcc-4.9`` for other reasons; my ``~/.bashrc`` has
+the following added:
 
 .. code-block:: bash
 
@@ -25,7 +29,8 @@ done to get NEMO working on my laptop with ``gcc-4.9`` for other reasons; my
   export F77=/usr/bin/gfortran-4.9
   export CPP=/usr/bin/cpp-4.9
   
-which overrides the default ``gcc5.4`` on my computer.
+which overrides the default ``gcc5.4`` on my computer. Testing with more recent
+versions of ``gcc`` and intel compilers ``icc\ifort`` will appear in due course.
 
 .. toctree::
    :maxdepth: 2

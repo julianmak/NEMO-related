@@ -8,6 +8,8 @@ sphinx notes
 
 (working notes)
 
+* https://github.com/ralsina/rst-cheatsheet/blob/master/rst-cheatsheet.rst
+
 * To get bibtex working on ReadTheDocs a ``requirements.txt`` may be needed.
 Having the following in there got the sphinx-bibtex extension working for me.
 

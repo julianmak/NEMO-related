@@ -8,7 +8,7 @@ GEOMETRIC outline
 
 **GEOMETRIC** (*Geometry and Energetics of Ocean Mesoscale Eddies and Their
 Rectified Impact on Climate*) is an approach to representing the unresolved
-turbulent eddies in ocean climate models, first dervied in
+turbulent eddies in ocean climate models, first derived in
 :cite:`Marshall-et-al12`. `David Marshall
 <https://www.marshallocean.net/geometric>`_'s page has an excellent outline and
 summary of GEOMETRIC, so this page will focus on outlining the details
@@ -125,8 +125,6 @@ For details relating to the NEMO implementation (e.g. variable names, numerical
 treatment, :code:`namelist_cfg` file), please see the following pages.
 
 .. toctree::
-
-   :maxdepth: 2
    
    code_details.rst
    assorted_files.rst
