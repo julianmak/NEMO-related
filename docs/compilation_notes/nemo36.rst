@@ -12,7 +12,10 @@ one level up.
 The assumption here is that the compiler is fixed and the packages (e.g.,
 NetCDF4 and a MPI bindings) are configured to be consistent with the compilers.
 See :ref:`here <sec:other-pack>` to check whether the binaries exist, where they
-are, and how they might be installed.
+are, and how they might be installed. All the ``#CHANGE ME`` highlighted below
+needs to be changed to point to the appropriate paths or binaries (links for
+binaries are ok). The compiler flags listed below seems to work fine with the
+choice of ``gcc4.9``.
 
 XIOS 1.0 (svn v703)
 -------------------
@@ -48,13 +51,13 @@ which paths and options to include. My files look like the following:
 
 .. code-block:: none
 
-  arch-GCC_local.env (don't copy this line)
+  # arch-GCC_local.env
 
-  export HDF5_INC_DIR=/usr/local/include
-  export HDF5_LIB_DIR=/usr/local/lib
+  export HDF5_INC_DIR=/usr/local/include       # CHANGE ME
+  export HDF5_LIB_DIR=/usr/local/lib           # CHANGE ME
 
-  export NETCDF_INC_DIR=/usr/local/include
-  export NETCDF_LIB_DIR=/usr/local/lib
+  export NETCDF_INC_DIR=/usr/local/include     # CHANGE ME
+  export NETCDF_LIB_DIR=/usr/local/lib         # CHANGE ME
   
 Here my HDF5 and NetCDF4 binaries are in ``/usr/local/`` (because I have
 ``sudo`` access). If they are somewhere else then specify another path (see
@@ -63,15 +66,15 @@ elsewhere for whatever reason).
 
 .. code-block:: none
 
-  arch-GCC_local.fcm (don't copy this line)
+  # arch-GCC_local.fcm
 
   ################################################################################
   ###################                Projet XIOS               ###################
   ################################################################################
 
-  %CCOMPILER      /usr/local/bin/mpicc
-  %FCOMPILER      /usr/local/bin/mpif90
-  %LINKER         /usr/local/bin/mpif90  
+  %CCOMPILER      /usr/local/bin/mpicc                # CHANGE ME
+  %FCOMPILER      /usr/local/bin/mpif90               # CHANGE ME
+  %LINKER         /usr/local/bin/mpif90               # CHANGE ME
 
   %BASE_CFLAGS    -ansi -w
   %PROD_CFLAGS    -O3 -DBOOST_DISABLE_ASSERTS
@@ -86,8 +89,8 @@ elsewhere for whatever reason).
   %BASE_INC       -D__NONE__
   %BASE_LD        -lstdc++
 
-  %CPP            cpp-4.9
-  %FPP            cpp-4.9 -P
+  %CPP            cpp-4.9                             # CHANGE ME
+  %FPP            cpp-4.9 -P                          # CHANGE ME
   %MAKE           make
   
 Here I have again my MPI things are in ``/usr/local``, with my ``mpicc`` and
@@ -99,7 +102,7 @@ don't have ``cmake``).
 
 .. code-block:: none
 
-  arch-GCC_local.path (don't copy this line)
+  # arch-GCC_local.path
 
   NETCDF_INCDIR="-I$NETCDF_INC_DIR"
   NETCDF_LIBDIR="-Wl,'--allow-multiple-definition' -L$NETCDF_LIB_DIR"
@@ -113,7 +116,7 @@ don't have ``cmake``).
   HDF5_LIBDIR="-L$HDF5_LIB_DIR"
   HDF5_LIB="-lhdf5_hl -lhdf5 -lhdf5 -lz"
 
-The above has all the OASIS (the atmopshere / ocean coupler) keys removed. (I
+The above has all the OASIS (the atmosphere / ocean coupler) keys removed. (I
 added the ``-Wl,'--allow-multiple-definition'`` key for reasons I don't remember
 anymore...)
 
@@ -131,7 +134,7 @@ compiler issues that may arise.
 
 .. note ::
 
-  The following error may show up:
+  If you get
   
   .. code-block:: none
   
@@ -142,15 +145,29 @@ compiler issues that may arise.
     fcm_internal compile failed (256)
     /home/julian/testing/nemo-6800/xios-703/xios-1.0/Makefile:1620: recipe for target 'inetcdf4.o' failed
     
-  The command ``find . -type f -iname "netcdf_par.h"`` shows that there is a
-  copy of the file in ``./extern/src_netcdf4/netcdf_par.h`` and it is not being
+  then doing ``find . -type f -iname "netcdf_par.h"`` shows that there is a copy
+  of the file in ``./extern/src_netcdf4/netcdf_par.h`` and it is not being
   pointed to correctly. The culprit is in ``bld.cfg``:
   
   .. code-block:: none
   
     bld::tool::cflags    %CFLAGS %CBASE_INC -I${PWD}/extern/src_netcdf -I${PWD}/extern/boost/include -I${PWD}/extern/rapidxml/include -I${PWD}/extern/blitz/include
     
-  Where ``src_netcdf`` needs to be changed to ``src_netcdf4``.
+  where ``src_netcdf`` needs to be changed to ``src_netcdf4``.
+  
+.. note ::
+
+  If you get something like
+  
+  .. code-block:: none
+  
+    libhdf5.a(H5PL.o): undefined reference to symbol 'dlclose@@GLIBC_2.2.5'
+  
+  then this suggests that the HDF5 library that is being called is built as a
+  static and/or not shareable library. In this case adding the ``-ldl`` flag to
+  ``HDF5_LIB`` in ``arch-GCC_local.path`` should work. Or if you want to you can
+  recompile HDF5 as a shareable library; see :ref:`other packages
+  <sec:other-pack>` on how you might go about doing this.
   
 It should work and takes around 5 mins to compile for me. The main end result is
 are binaries in ``xios1.0/bin/`` which NEMO will call.
@@ -190,7 +207,7 @@ detailed log of how I got to the following):
 
 .. code-block :: none
 
-  gfortran_local.fcm (don't copy this line)
+  # gfortran_local.fcm
   
   # generic gfortran compiler options for linux
   # NCDF_INC    netcdf include file
@@ -207,19 +224,19 @@ detailed log of how I got to the following):
   # USER_INC    additional include files for the compiler,  e.g. -I<include dir>
   # USER_LIB    additional libraries to pass to the linker, e.g. -l<library>
 
-  %NCDF_HOME           /usr/local
+  %NCDF_HOME           /usr/local                                       # CHANGE ME
 
-  %XIOS_HOME           /home/julian/testing/nemo-6800/xios-703/xios-1.0
+  %XIOS_HOME           /home/julian/testing/nemo-6800/xios-703/xios-1.0 # CHANGE ME
 
-  %CPP	               cpp-4.9
+  %CPP	               cpp-4.9                                          # CHANGE ME
   %CPPFLAGS            -P -traditional
 
-  %XIOS_INC            -I%XIOS_HOME/inc 
+  %XIOS_INC            -I%XIOS_HOME/inc
   %XIOS_LIB            -L%XIOS_HOME/lib -lxios
 
   %NCDF_INC            -I%NCDF_HOME/include
   %NCDF_LIB            -L%NCDF_HOME/lib -lnetcdf -lnetcdff -lstdc++
-  %FC	                 mpif90
+  %FC                  mpif90                                           # CHANGE ME
   %FCFLAGS             -fdefault-real-8 -O3 -funroll-all-loops -fcray-pointer -cpp -ffree-line-length-none
   %FFLAGS              %FCFLAGS
   %LD                  %FC
