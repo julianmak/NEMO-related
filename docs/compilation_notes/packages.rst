@@ -253,7 +253,8 @@ is configured. The things in ``build/`` and ``source/`` may now be deleted.
 Combined shell script
 ---------------------
 
-The thing below does **all** of the above in one go (use at your own risk):
+A script that does **all** of the above in one go may be found in the following
+commands (use at your own risk):
 
 .. code-block :: bash
 
@@ -263,8 +264,8 @@ The thing below does **all** of the above in one go (use at your own risk):
   chmod +x compile_dependencies.sh
   
 Before you execute the shell script with ``./compile_dependencies.sh``, make
-sure you the compilers are pointed to appropriately. You can do this in
-``~/.bashrc`` (see first code block on this page) or within the script itself
-(it is commented out at the moment). Some packages may already exist, and if you
-don't want them installed you should comment out the appropriate lines in the
-script and modify some of the paths accordingly.
+sure the compilers are pointed to appropriately. You can do this in
+``~/.bashrc`` (see first code block on this page) or within the shell script
+itself (it is commented out at the moment). If some packages already exist and
+don't want them installed, comment out the appropriate lines in the script and
+modify some of the paths accordingly.
