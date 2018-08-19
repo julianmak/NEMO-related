@@ -23,7 +23,7 @@ anymore), or (ii) artifically change the python files to read it the older
 
 ------  python things  ------
 
-I personally did most things through "anaconda". The packages needed are
+I got most things through "anaconda". The packages needed are
 
 numpy
   -- I thought about using f2py at some point to wrap Fortran code into Python,
@@ -42,15 +42,14 @@ modules
 
 ????????????????????????????????????????????????????????????????????????????????
 
-TO DO (updated 27 Apr 2018):
+TO DO (updated 19 Aug 2018):
 
 * Add TEOS10 for working out density in eos.py (get it off wherever Fabien put 
   it on the internet)
-  
-* Other options in cdfmocsig
+  -- test this with some sample data? Seems ok with gsw tests but the resulting
+     neutral density looks a bit odd when working with NEMO data...?
 
-* Wrapper script to do time-averaging in density co-ordinates (make sure loaded
-  data is instantaneous ones!)
+* Fix some averagings in cdfmoc and cdfmocsig
   
 * Rotation of vectors to deal with e.g. GYRE configuration
 

@@ -57,6 +57,7 @@ def cdfmoc(data_dir, v_file, v_var, **kwargs):
     lprint   = True   for printing out variable names in netcdf file
     lg_vvl   = True   for using s-coord (time-varying metric)
     ldec     = True   decompose the MOC into some components
+    lbas     = True   decompose the MOC into basins (need a new_maskglo.nc with default variable names)
     
   Returns:
     zW (gdepw_1d), latV (rdumlat), dmoc for plotting, opt_dic for record
@@ -65,7 +66,8 @@ def cdfmoc(data_dir, v_file, v_var, **kwargs):
   opt_dic = {"kt"     : 0,
              "lprint" : False,
              "lg_vvl" : False,
-             "ldec"   : False}
+             "ldec"   : False,
+             "lbas"   : False}
 
   # overwrite the options by cycling through the input dictionary
   for key in kwargs:
@@ -92,6 +94,22 @@ def cdfmoc(data_dir, v_file, v_var, **kwargs):
     e3v     = cn_mask.variables["e3v_0"][opt_dic["kt"], :, :, :]
   cn_mask.close()
   
+  if opt_dic["lbas"]:
+    # 0 : global ; 1 : Atlantic ; 2 : Indo-Pacif ; 3 : Indian ; 4 : Pacif
+    cn_basin = Dataset(data_dir + "new_maskglo.nc")
+    nbasins = 5
+    ibmask = zeros((nbasins, npjglo, npiglo))
+    ibmask[0, :, :] = vmask[0, :, :]
+    ibmask[1, :, :] = cn_basin.variables["atlmsk"][:, :]
+    ibmask[2, :, :] = cn_basin.variables["indpacmsk"][:, :]
+    ibmask[3, :, :] = cn_basin.variables["indmsk"][:, :]
+    ibmask[4, :, :] = cn_basin.variables["pacmsk"][:, :]
+    cn_basin.close()
+  else:
+    nbasins = 1
+    ibmask = zeros((nbasins, npjglo, npiglo))
+    ibmask[0, :, :] = vmask[0, :, :]
+    
   if opt_dic["ldec"]:
     print("NOT DONE THIS YET! -- 16 APR 2018")
     return (0.0, 0.0, 0.0, opt_dic)
@@ -106,29 +124,31 @@ def cdfmoc(data_dir, v_file, v_var, **kwargs):
 #  1) Compute total MOC: dmoc 
 #     [loop done using jit to speed it up (about 60 times faster)]
 #  --------------------------
-  dmoc = dmoc_loop(e1v, e3v, vmask, zv, npk, npjglo, npiglo)
+  dmoc = dmoc_loop(e1v, e3v, vmask, zv, npk, npjglo, npiglo, ibmask)
 
   return (gdepw, rdumlat, dmoc, opt_dic)
   
 #-------------------------------------------------------------------------------
 
 @jit(nopython = True)
-def dmoc_loop(e1v, e3v, vmask, zv, npk, npjglo, npiglo):
+def dmoc_loop(e1v, e3v, vmask, zv, npk, npjglo, npiglo, ibmask):
 
-  dmoc = zeros((npk, npjglo)) # change this if having the multiple basin decomposition
+  dmoc = zeros((ibmask.shape[0], npk, npjglo))
   
   zv *= vmask # mask the array here
   
   # integrate 'zonally' (along i-coordinate)
-  for jk in range(npk):
-    for jj in range(npjglo):
-      for ji in range(npiglo):
-        dmoc[jk, jj] -= e1v[jj, ji] * e3v[jk, jj, ji] * zv[jk, jj, ji]
+  for jbasin in range(ibmask.shape[0]):
+    for jk in range(npk):
+      for jj in range(npjglo):
+        for ji in range(npiglo):
+          if ibmask[jbasin, jj, ji]:
+            dmoc[jbasin, jk, jj] -= e1v[jj, ji] * e3v[jk, jj, ji] * zv[jk, jj, ji]
         
   # integrate vertically from bottom to surface
   for jj in range(npjglo):
     for jk in range(npk-2, 0, -1): # python indexing
-      dmoc[jk, jj] = dmoc[jk + 1, jj] + dmoc[jk, jj] / 1.0e6
+      dmoc[:, jk, jj] = dmoc[:, jk + 1, jj] + dmoc[:, jk, jj] / 1.0e6
       
   return dmoc
 

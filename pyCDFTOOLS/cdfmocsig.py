@@ -60,7 +60,7 @@ def cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs):
       eivv_var = string for EIV-v variable name
     lisodep  = True   (not yet implemented) output zonal averaged isopycnal depth
     lntr     = True   (not yet implemented) do binning with neutral density
-    lbas     = ???
+    lbas     = True   decompose the MOC into basins (need a new_maskglo.nc with default variable names)
     
   Returns:
     sigma (density bins), latV (rdumlat), dmoc for plotting, opt_dic for record
@@ -123,7 +123,24 @@ def cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs):
     
   # flags for MOC splitting into variables
   if opt_dic["lbas"]:
-    print("NOT DONE THIS YET! -- 29 MAY 2018")
+    # 0 : global ; 1 : Atlantic ; 2 : Indo-Pacif ; 3 : Indian ; 4 : Pacif
+    cn_basin = Dataset(data_dir + "new_maskglo.nc")
+    nbasins = 5
+    ibmask = zeros((nbasins, npjglo, npiglo))
+    ibmask[0, :, :] = vmask[0, :, :]
+    ibmask[1, :, :] = cn_basin.variables["atlmsk"][:, :]
+    ibmask[2, :, :] = cn_basin.variables["indpacmsk"][:, :]
+    ibmask[3, :, :] = cn_basin.variables["indmsk"][:, :]
+    ibmask[4, :, :] = cn_basin.variables["pacmsk"][:, :]
+    cn_basin.close()
+  else:
+    nbasins = 1
+    ibmask = zeros((nbasins, npjglo, npiglo))
+    ibmask[0, :, :] = vmask[0, :, :]
+    
+  if opt_dic["ldec"]:
+    print("NOT DONE THIS YET! -- 16 APR 2018")
+    return (0.0, 0.0, 0.0, opt_dic)
 
 #  --------------------------
 #  0) Initialisations
@@ -142,12 +159,6 @@ def cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs):
   
   # work out areas
   zarea = e1v * e3v
-  
-  if opt_dic["lbas"]:
-    print("NOT DONE THIS YET! -- 29 MAY 2018")
-    nbasins = 5
-  else:
-    nbasins = 1
   
 #  --------------------------
 #  1) Bin and integrate across density classes to form dmoc
@@ -184,13 +195,13 @@ def cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs):
     # sum up over the density classes
     # routine takes dmoc as an input and adds to it, so no += required
     dmoc = dmoc_loop(dmoc, zv[jk, :, :], zarea[jk, :, :], ibin, 
-                     nbins, ij1, ij2, npjglo, npiglo, nbasins)
+                     nbins, ij1, ij2, npjglo, npiglo, ibmask)
                      
     # lisodep routines
     if opt_dic["lisodep"]:
       depi, wdep = isodep_loop(depi, wdep, zarea[jk, :, :], ibin, 
                                gdep[jk], tmask[jk, :, :],
-                               nbins, ij1, ij2, npjglo, npiglo, nbasins)
+                               nbins, ij1, ij2, npjglo, npiglo, ibmask)
 
   # Integrate across the bins from high to low density
   dmoc[:, nbins - 1, :] /= 1.0e6
@@ -205,7 +216,7 @@ def cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs):
 #-------------------------------------------------------------------------------
 @jit(nopython = True)
 def dmoc_loop(dmoc, zv, zarea, ibin, 
-              nbins, ij1, ij2, npjglo, npiglo, nbasins):
+              nbins, ij1, ij2, npjglo, npiglo, ibmask):
   
   # Do the binning and convert k into sigma
   for jj in range(ij1, ij2):
@@ -218,17 +229,18 @@ def dmoc_loop(dmoc, zv, zarea, ibin,
       
     # integrate 'zonally' (along i-coordingate)
     # add to dmoc
-    for jbasin in range(nbasins):
+    for jbasin in range(ibmask.shape[0]):
       for jbin in range(0, nbins):
         for ji in range(1, npiglo - 1):
-          dmoc[jbasin, jbin, jj] += dmoc_tmp[jbin, ji]
+          if ibmask[jbasin, jj, ji]: # only do something where it needs to
+            dmoc[jbasin, jbin, jj] += dmoc_tmp[jbin, ji]
           
   return dmoc
   
 #-------------------------------------------------------------------------------
 @jit(nopython = True)
 def isodep_loop(depi, wdep, zarea, ibin, gdep, itmask,
-                nbins, ij1, ij2, npjglo, npiglo, nbasins):
+                nbins, ij1, ij2, npjglo, npiglo, ibmask):
   
   # Do the binning and convert k into sigma
   for jj in range(ij1, ij2):
@@ -243,11 +255,12 @@ def isodep_loop(depi, wdep, zarea, ibin, gdep, itmask,
       
     # integrate 'zonally' (along i-coordingate)
     # add to isodep variables
-    for jbasin in range(nbasins):
+    for jbasin in range(ibmask.shape[0]):
       for jbin in range(0, nbins):
         for ji in range(1, npiglo - 1):
-          depi[jbasin, jbin, jj] += depi_tmp[jbin, ji]
-          wdep[jbasin, jbin, jj] += wdep_tmp[jbin, ji]
+          if ibmask[jbasin, jj, ji]:
+            depi[jbasin, jbin, jj] += depi_tmp[jbin, ji]
+            wdep[jbasin, jbin, jj] += wdep_tmp[jbin, ji]
           
   return (depi, wdep)
   
