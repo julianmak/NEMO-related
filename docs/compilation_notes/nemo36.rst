@@ -6,7 +6,7 @@
 NEMO 3.6 (stable) + XIOS 1.0
 ============================
 
-System settings: ``gcc-4.9``, Ubuntu 16.04, ``bashrc`` as configured in the page
+Tested with: ``gcc-4.9``, Ubuntu 16.04, ``bashrc`` as configured in the page
 one level up.
 
 The assumption here is that the compiler is fixed and the packages (e.g.,
@@ -59,10 +59,11 @@ which paths and options to include. My files look like the following:
   export NETCDF_INC_DIR=/usr/local/include     # CHANGE ME
   export NETCDF_LIB_DIR=/usr/local/lib         # CHANGE ME
   
-Here my HDF5 and NetCDF4 binaries are in ``/usr/local/`` (because I have
-``sudo`` access). If they are somewhere else then specify another path (see
-:ref:`other packages <sec:other-pack>` page if you need to install binaries
-elsewhere for whatever reason).
+You could check where the HDF5 and NetCDF4 directories are by doing ``which
+h5copy`` and ``which nc-config``, which should give you a ``directory/bin``, and
+it is the ``directory`` part you want. If you did install the libraries
+somewhere else as in :ref:`other packages <sec:other-pack>`, say, then make sure
+the ``which`` commangs are pointing to the right place.
 
 .. code-block:: none
 
@@ -93,9 +94,9 @@ elsewhere for whatever reason).
   %FPP            cpp-4.9 -P                          # CHANGE ME
   %MAKE           make
   
-Here I have again my MPI things are in ``/usr/local``, with my ``mpicc`` and
-``mpif90`` bound to ``gcc-4.9`` and ``gfortran-4.9`` respectively (check with
-the command ``mpicc --version`` say). MPI bindings are used here to avoid a
+Here I have again check the MPI locations by doing ``which mpicc`` and ``mpicc
+--version`` say. If they are the right ones you could just have ``mpicc``
+instead of the full path as given above. MPI bindings are used here to avoid a
 possible error that may pop up in relation to the build trying to find
 ``mpi.h``. The ``gmake`` command was swapped out by the ``make`` command (I
 don't have ``cmake``).
@@ -116,9 +117,9 @@ don't have ``cmake``).
   HDF5_LIBDIR="-L$HDF5_LIB_DIR"
   HDF5_LIB="-lhdf5_hl -lhdf5 -lhdf5 -lz"
 
-The above has all the OASIS (the atmosphere / ocean coupler) keys removed. (I
+The above has all the OASIS (the atmosphere / ocean coupler) keys removed. I
 added the ``-Wl,'--allow-multiple-definition'`` key for reasons I don't remember
-anymore...)
+anymore...
 
 Now it should be ready to compile. Assuming the current directory is
 ``xios1.0/arch``:

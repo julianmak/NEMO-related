@@ -38,31 +38,43 @@ The order I did them in are:
 3. hdf5 (1.8.19, for NetCDF)
 4. netcdf (4.4.1.1) and netcdf-fortran (4.4.4), for XIOS
 
-I put the following in my ``~/.bashrc`` file and called it with ``source
-~/.bashrc``; the following codes have it explicitly defined just in case:
+Within a folder called ``gcc4.9-builds``, I added an extra ``extra_variables``
+file with extra variables for convenience:
 
 .. code-block:: bash
+
+  export $BD=/home/julian/testing/gcc4.9-builds # CHANGE ME
 
   export CC=/usr/bin/gcc-4.9
   export CXX=/usr/bin/g++-4.9
   export FC=/usr/bin/gfortran-4.9
   export F77=/usr/bin/gfortran-4.9
   export CPP=/usr/bin/cpp-4.9
+
+  export C_INCLUDE_PATH=$BD/install/include:$C_INCLUDE_PATH
+  export CPLUS_INCLUDE_PATH=$BD/install/include:$CPLUS_INCLUDE_PATH
+  export LIBRARY_PATH=$BD/install/lib:$LIBRARY_PATH
+  export LD_LIBRARY_PATH=$BD/install/lib:$LD_LIBRARY_PATH
+  export PATH=$BD/install/bin:$PATH
   
+Set this by doing ``source extra_variables``, and upon closing the terminal the
+variables will be flushed. Some of these may want to be added to ``~/.bashrc``
+for convenience anyway. If the variables are not set then additional variables
+and flags will need to be put in to ``./configure`` to tell the program to look
+at the right places.
+
 .. note::
 
   Do for example ``$CC --version`` or ``echo $CC`` to see what the variables are
-  set to.
-  
-  If you don't want to set the variables to anything, then you need to do e.g.
+  set to. If you don't want to set the compiler variables then you need to do
+  e.g.
   
   .. code:: bash
   
     CC=/usr/bin/gcc-4.9 FC= something ./configure something
     
   where the path points to where the compiler binary lives. This then only sets
-  the variable temporarily for the particular command, but you do need to it for
-  all the ``./configure`` commands below.
+  the variable temporarily for the particular command.
   
 Some or all of these may be skipped depending on which ones packages you have
 already installed and/or configured. The following installs all the libraries
@@ -78,10 +90,9 @@ sub-directories in the folder are:
 
 .. note::
 
-  The binaries built here will not register by default unless you add it to the
-  ``$PATH$`` variable in ``~./bashrc`` or equivalent. If you are going to the
-  folder to the ``$PATH`` variable, the one that gets registered **first** gets
-  priority, i.e.
+  The binaries built here will not register by default unless it is added to the
+  ``$PATH`` variable. If you are going to add to the ``$PATH`` variable, the one
+  that gets registered **first** gets priority, i.e.
   
   .. code:: bash
     
@@ -97,60 +108,59 @@ sub-directories in the folder are:
   
   If you don't do this then it just means when you call the binaries you have to
   provide an explicit call, e.g.,
-  ``/home/julian/testing/gcc4.9/build/bin/mpif90``. Do for example ``whereis
+  ``/home/julian/testing/gcc4.9/build/bin/mpif90``. Do for example ``which
   mpif90`` to check what the ``mpif90`` is linked to; if you did add to
-  ``$PATH`` then the ``whereis`` command above should point to the right binary. 
+  ``$PATH`` then the ``which`` command above should point to the right binary. 
 
 MPICH
 -----
 
-Check if you have any MPI and which compilers they are bound to using, for
-example,
+Check if there are any MPI capabilities and which compilers they are bound to:
 
 .. code-block:: bash
   
   mpicc --version
-  whereis mpicc
+  which mpicc
   
-If you have these already they may not need to be installed. If you do want to
-install it separately for whatever reason, then you could do the following. I
+If you have these already they may not need to be installed. If they need to be
+installed separately for whatever reason, then you could do the following. I
 took the source files from the `MPICH website
 <http://www.mpich.org/static/downloads/>`_ itself and chose v3.0.4 here. Being
-in the ``gcc.4.9-builds`` folder, I did:
+in the ``$BD`` folder, I did:
 
 .. code-block:: bash
 
-  cd source/
+  cd $BD/source/
   wget http://www.mpich.org/static/downloads/3.0.4/mpich-3.0.4.tar.gz
-  cd ../build/
-  tar -xvzf ../source/mpich-3.0.4.tar.gz
+  cd $BD/build/
+  tar -xvzf $BD/source/mpich-3.0.4.tar.gz
   cd mpich-3.0.4
-  ./configure prefix=/home/julian/testing/gcc4.9-builds/install/  # CHANGE ME
+  ./configure prefix=$BD/install/
   make -j 2
   make check install
-  cd ../../
   
-  cd source/
+  cd $BD/source/
   wget http://www.mpich.org/static/downloads/3.0.4/hydra-3.0.4.tar.gz
-  cd ../build/
-  tar -xvzf ../source/hydra-3.0.4.tar.gz
+  cd $BD/build/
+  tar -xvzf $BD/source/hydra-3.0.4.tar.gz
   cd hydra-3.0.4
-  ./configure prefix=/home/julian/testing/gcc4.9-builds/install/  # CHANGE ME
+  ./configure prefix=$BD/install/
   make -j 2
   make check install
-  cd ../../
+  cd $BD
   
-Within ``gcc4.9-builds/install/`` there should now be some folders that can be
-pointed to for the binaries, libraries and header files to include for later
-installations.
+Within ``install/`` there should now be some folders that can be pointed to for
+the binaries, libraries and header files to include for later installations.
   
 .. note::
 
   The ``./configure prefix=`` step requires an absolute (not relative) path.
+  Change this is you want to have it installed somewhere else, e.g.,
+  ``/usr/local`` if you have ``sudo`` access.
   
 
-zlib and HDF5 
--------------
+HDF5 (and maybe zlib)
+---------------------
 
 Check whether HDF5 exists first (may still need to be installed again for
 compatibility reasons). ``h5copy`` is the command that should exist if HDF5 is
@@ -158,45 +168,61 @@ installed.
 
 .. code-block:: bash
   
-  whereis h5copy
+  which h5copy
   h5copy --version
   
 If you still want to install it, then do the following (following the
 instructions on the `Unidata UCAR website
 <https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf-install/Quick-Instructions.html>`_).
-The raw files are taken from the zlib and HDF5 website, using zlib v1.2.11 and
-HDF5 v1.8.19. Again, being in the ``gcc4.9-builds`` directory:
+The raw files are taken from the HDF5 website using HDF5 v1.8.19. Again, with
+``$BD`` as defined:
 
 .. code-block:: bash
-
-  cd source/
-  wget http://www.zlib.net/zlib-1.2.11.tar.gz
-  cd ../build/
-  tar -xvzf ../source/zlib-1.2.11.tar.gz
-  cd zlib-1.2.11
-  CFLAGS=-fPIC ./configure --prefix=/home/julian/testing/gcc4.9-builds/install/  # CHANGE ME
-  make -j 2
-  make check install
-  cd ../../
   
-  cd source/
-  wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.19/src/hdf5-1.8.19.tar.gz
-  cd ../build/
-  tar -xvzf ../source/hdf5-1.8.19.tar.gz
-  cd hdf5-1.8.19
-  CFLAGS=-fPIC ./configure --enable-shared --enable-fortran --enable-cxx --with-zlib=/home/julian/testing/gcc4.9-builds/ --prefix=/home/julian/testing/gcc4.9-builds/install/    # CHANGE ME
+  cd $BD/source/
+  wget http://www.zlib.net/zlib-1.2.11.tar.gz
+  cd $BD/build/
+  tar -xvzf $BD/source/zlib-1.2.11.tar.gz
+  cd zlib-1.2.11
+  ./configure --prefix=$BD/install/  
   make -j 2
   make check install
-  cd ../../
+  
+  cd $BD/source/
+  wget https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.19/src/hdf5-1.8.19.tar.gz
+  cd $BD/build/
+  tar -xvzf $BD/source/hdf5-1.8.19.tar.gz
+  cd hdf5-1.8.19
+  ./configure --disable-shared --enable-fortran --enable-cxx --prefix=$BD/install/
+  make -j 2
+  make check install
+  cd $BD
+  
+.. warning::
+
+  HDF5 checking and installation can take a while (anything from 5 to 30 mins
+  depending...) If you are feeling brave you can just do ``make install``; do
+  this at your own risk...
   
 .. note::
+  
+  At the end of the ``./configure`` for HDF5, check that ``AM_CPPFLAGS`` and
+  ``AM_LDFLAGS`` are pointing to the directory you specified, otherwise it might
+  be pointing to an unintended version of zlib (like I have in this case for
+  testing reasons). If the ``$LD_LIBRARY_PATH`` etc. variables are not set, you
+  will probably need to add ``--with-zlib=$BD/`` to the HDF5 ``./configure``
+  command.
+  
+  You can also check the linking by doing e.g. ``ldd $BD/install/bin/h5copy``
+  after installation, and see where ``libz.so.?`` is pointed to. If you did add
+  things to ``$PATH``, then doing ``which h5copy`` should now show the intended
+  path; if not, check that ``echo $PATH`` has the intended directory before the
+  others.
 
-  HDF5 checking and installation takes a while (~5-10 mins).
-
-  If problems arise, try replacing ``--enable-shared`` with
-  ``--disable-shared``. Then it is not necessary to compile zlib or use the
-  ``-fPIC`` flags (doesn't matter since the libraries are likely just for
-  private consumption).
+  The above uses ``--disable-shared`` which should be fine for private
+  consumption, and I find it slightly less prone to errors. For a shared build,
+  swap out ``--disable-shared`` for ``--enable-shared``, and ``CFLAGS=-fPIC``
+  added to the above ``./configure`` for **both** HDF5 and zlib.
 
 NetCDF4
 -------
@@ -214,41 +240,51 @@ If you still want to install it, then do the following (following the
 instructions on the `Unidata UCAR website
 <https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf-install/Quick-Instructions.html>`_).
 The raw files are taken from the the NetCDF4 website, using netcdf v4.4.1.1 and
-netcdf-fortran v4.4.4. Again, being in the ``gcc4.9-builds`` directory:
+netcdf-fortran v4.4.4:
 
 .. code-block:: bash
 
-  cd source/
+  cd $BD/source/
   wget ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4.4.1.1.tar.gz
-  cd ../build/
-  tar -xvzf ../source/netcdf-4.4.1.1.tar.gz
+  cd $BD/build/
+  tar -xvzf $BD/source/netcdf-4.4.1.1.tar.gz
   cd netcdf-4.4.1.1
-  ./configure --enable-netcdf4 --enable-shared --prefix=/home/julian/testing/gcc4.9-builds/install/   # CHANGE ME
+  ./configure --enable-netcdf4 --disable-shared --prefix=$BD/install/
   make -j 2
   make check install
-  cd ../../
   
-  cd source/
+  cd $BD/source/
   wget ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-fortran-4.4.4.tar.gz
-  cd ../build/
-  tar -xvzf ../source/netcdf-fortran-4.4.4.tar.gz
+  cd $BD/build/
+  tar -xvzf $BD/source/netcdf-fortran-4.4.4.tar.gz
   cd netcdf-fortran-4.4.4
-  ./configure --enable-shared --prefix=/home/julian/testing/gcc4.9-builds/install/    # CHANGE ME
+  ./configure --disable-shared --prefix=$BD/install/
   make -j 2
   make check install
-  cd ../../
+  cd $BD
   
-This should be it! Try ``./install/bin/nc-config --all`` to see where everything
-is configured. The things in ``build/`` and ``source/`` may now be deleted.
+.. warning::
+
+  NetCDF4 checking and installation can take a while (anything from 5 to 30 mins
+  depending...) If you are feeling brave you can just do ``make install``; do
+  this at your own risk...
   
 .. note::
 
-  NetCDF checking and installation takes a while (~5-10 mins). The Fortran
-  version however shouldn't take too long.
+  I had a problem with not having the m4 package, which I just installed as the
+  installation commands above, with the binaries found from ``wget
+  ftp://ftp.gnu.org/gnu/m4/m4-1.4.10.tar.gz``.
+  
+  Do the ``ldd`` and ``which`` commands to check which things are being pointed
+  to. If the HDF5 and zlib libraries are not pointed to correctly, then consider
+  manually adding either the flags ``--with-hdf5=$BD/install/
+  --with-zlib=$BD/install/`` or ``CPPFLAGS=-I$BD/install/include
+  LDFLAGS=-L$BD/install/lib`` to the first ``./configure`` command.
 
-  If problems arise, try replacing ``--enable-shared`` with
-  ``--disable-shared``.
+  For shared libraries, replace ``--disable-shared`` with ``--enabled-shared``.
 
+This should be it! Try ``./install/bin/nc-config --all`` to see where everything
+is configured. The things in ``build/`` and ``source/`` may now be deleted.
 
 Combined shell script
 ---------------------
@@ -260,12 +296,11 @@ commands (use at your own risk):
 
   mkdir gcc4.9-builds/               # CHANGE ME
   cd gcc4.9-builds/                  # CHANGE ME
-  wget https://github.com/julianmak/NEMO-related/tree/master/docs/compilation_notes/compile_dependencies.sh
+  wget https://raw.githubusercontent.com/julianmak/NEMO-related/master/docs/compilation_notes/compile_dependencies.sh
   chmod +x compile_dependencies.sh
   
 Before you execute the shell script with ``./compile_dependencies.sh``, make
 sure the compilers are pointed to appropriately. You can do this in
 ``~/.bashrc`` (see first code block on this page) or within the shell script
 itself (it is commented out at the moment). If some packages already exist and
-don't want them installed, comment out the appropriate lines in the script and
-modify some of the paths accordingly.
+you don't want them installed, comment the appropriate lines.

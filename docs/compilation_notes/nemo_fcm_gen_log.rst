@@ -70,7 +70,7 @@ C pre-processing is not defined, so add in the following keys:
   %CPPFLAGS            -P -traditional
   
 ``cpp-4.9`` is my C-preprocessing associated with ``gcc4.9``; do something like
-``whereis cpp-4.9`` to find if it is the right binary to call. (Note C++ appears
+``which cpp-4.9`` to find if it is the right binary to call. (Note C++ appears
 as ``g++`` or ``mpicxx`` for example). 
 
 Fortran talking with CPP
