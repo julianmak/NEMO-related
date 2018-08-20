@@ -64,9 +64,13 @@ file containing the following:
   
 Set this by doing ``source extra_variables``, and upon closing the terminal the
 variables will be flushed. Some of these may want to be added to ``~/.bashrc``
-for convenience. If the variables are not set then additional variables and
-flags will need to be provided for ``./configure`` to tell the program to look
-at the right places.
+for convenience. The instructions below attempts to build shared rather than
+static libraries, and somewhat depends ``LD_LIBRARY_PATH`` variable being set
+(with the added bonus that the ``ldd`` command provides an extra check whether
+the correct libraries are being called). Suggestions on how to build the
+packages without setting ``LD_LIBRARY_PATH`` or build static packages are given
+below (using ``LD_LIBRARY_PATH`` can be dangerous, see e.g., `here
+<http://xahlee.info/UnixResource_dir/_/ldpath.html>`_).
 
 .. note::
 
@@ -188,7 +192,7 @@ The raw files are taken from the HDF5 website using HDF5 v1.8.19. Again, with
   cd $BD/build/
   tar -xvzf $BD/source/zlib-1.2.11.tar.gz
   cd zlib-1.2.11
-  ./configure --prefix=$BD/install/  
+  CFLAGS=-fPIC ./configure --prefix=$BD/install/  
   make -j 2
   make check install
   
@@ -197,7 +201,7 @@ The raw files are taken from the HDF5 website using HDF5 v1.8.19. Again, with
   cd $BD/build/
   tar -xvzf $BD/source/hdf5-1.8.19.tar.gz
   cd hdf5-1.8.19
-  ./configure --disable-shared --enable-hl --enable-fortran --enable-cxx --prefix=$BD/install/
+  CFLAGS=-fPIC ./configure --enable-shared --enable-fortran --enable-cxx --prefix=$BD/install/
   make -j 2
   make check install
   cd $BD
@@ -207,22 +211,21 @@ The raw files are taken from the HDF5 website using HDF5 v1.8.19. Again, with
   At the end of the ``./configure`` for HDF5, check that ``AM_CPPFLAGS`` and
   ``AM_LDFLAGS`` are pointing to the directory you specified, otherwise it might
   be pointing to an unintended version of zlib (like I have in this case for
-  testing reasons). If the ``$LD_LIBRARY_PATH`` etc. variables are not set, you
-  will probably need to add ``--with-zlib=$BD/`` to the HDF5 ``./configure``
-  command.
+  testing reasons).
   
   HDF5 checking and installation can take a while (anything from 5 to 30 mins).
   
-  You can also check the linking by doing e.g. ``ldd $BD/install/bin/h5copy``
-  after installation, and see where ``libz.so.?`` is pointed to. If you did add
-  things to ``$PATH``, then doing ``which h5copy`` should now show the intended
-  path.
+  I would do ``ldd h5copy`` (or wherever ``h5copy`` is installed at if the
+  direectory has not been added to ``$PATH``) to check that ``libhdf5`` does
+  point to where you think it should point to.
 
-  The above uses ``--disable-shared`` which should be fine for private
-  consumption, and I find it slightly less prone to errors. For a shared build,
-  swap out ``--disable-shared`` for ``--enable-shared``, and add the
-  ``CFLAGS=-fPIC`` flag to **both** of the HDF5 and zlib ``./configure``
-  command.
+  For a static build, swap out ``--enable-shared`` for
+  ``--disable-shared``, the ``CFLAGS=-fPIC`` may be removed, but appropriate
+  flags such as ``CPPFLAGS=-I$BD/install/include``,
+  ``LDFLAGS=-L$BD/install/lib``, and some things to do with ``LIBS="-lz -lhdf5``
+  etc. needs to be added to the HDF5 and NetCDF4 builds below. See `here
+  <https://www.unidata.ucar.edu/software/netcdf/docs/building_netcdf_fortran.html>`_
+  for a guide.
 
 NetCDF4
 -------
@@ -249,7 +252,7 @@ netcdf-fortran v4.4.4:
   cd $BD/build/
   tar -xvzf $BD/source/netcdf-4.4.1.1.tar.gz
   cd netcdf-4.4.1.1
-  ./configure --enable-netcdf4 --disable-shared --prefix=$BD/install/
+  ./configure --enable-netcdf4 --enable-shared --prefix=$BD/install/
   make -j 2
   make check install
   
@@ -258,29 +261,35 @@ netcdf-fortran v4.4.4:
   cd $BD/build/
   tar -xvzf $BD/source/netcdf-fortran-4.4.4.tar.gz
   cd netcdf-fortran-4.4.4
-  ./configure --disable-shared --prefix=$BD/install/
+  ./configure --enable-shared --prefix=$BD/install/
   make -j 2
   make check install
   cd $BD
   
 .. note::
+  
+  NetCDF4 checking and installation can take a while (anything from 5 to 30
+  mins).
+  
+  I would do ``ldd ncdump`` (or wherever ``ncdump`` was installed if the
+  directory has not been added to ``$PATH``) and check that ``libnetcdf``,
+  ``libhdf5`` and ``libz`` really does point to where you think it should point
+  to.
 
   I had a problem with not having the m4 package, which I just installed as the
   installation commands above, with the binaries found from ``wget
   ftp://ftp.gnu.org/gnu/m4/m4-1.4.10.tar.gz``.
   
-  NetCDF4 checking and installation can take a while (anything from 5 to 30
-  mins).
-  
   Do the ``ldd`` and ``which`` commands to check which things are being pointed
   to. If the HDF5 and zlib libraries are not pointed to correctly, then consider
   manually adding the flags ``CPPFLAGS=-I$BD/install/include
-  LDFLAGS=-L$BD/install/lib`` to the ``./configure`` commands.
+  LDFLAGS=-L$BD/install/lib`` to the ``./configure`` commands. These variables
+  along with ``LIBS`` need to be specified when building a static build as well
+  (replacing the appropriate flags).
 
-  For shared libraries, replace ``--disable-shared`` with ``--enabled-shared``.
-
-This should be it! Try ``./install/bin/nc-config --all`` to see where everything
-is configured. The things in ``build/`` and ``source/`` may now be deleted.
+This should be it! Try ``./install/bin/nc-config --all`` and/or
+``./install/bin/nf-config --all`` to see where everything is configured. The
+things in ``build/`` and ``source/`` may now be deleted.
 
 Combined shell script
 ---------------------
