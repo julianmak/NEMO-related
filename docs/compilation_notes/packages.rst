@@ -12,24 +12,29 @@ The following packages are needed for NEMO and XIOS and they may need to be
 installed or configured accordingly. If you want a script to do all of the
 following in one go, then please scroll right to the bottom of this page.
 
+.. Warning::
+
+  The below in essence works but is still being tested (and is in fact failing
+  on another machine for reasons yet to be narrowed down). Please use with
+  caution.
+
 Preliminaries
 -------------
 
 .. note::
 
-  As of 18 Aug 2018, the following are remains on the agenda:
+  As of 18 Aug 2018, the following remains on the agenda:
   
   * testing with ``gcc5.4``
   * testing with the intel compilers (using the Oxford system)
   * reproducing sample compatibility errors (using the Oxford system)
-  * compilation of a script file that will do **everything** below
 
 The way I went about it was to first choose a set of compilers and use the same
-set of compilers to install some of the dependencies, primarily to avoid errors
-relating to compatibility of packages. For example, ``gcc4.9`` was downloaded
-through ``sudo apt-get install gcc4.9``, or loaded through a network computer
-through something like a ``module load`` command. You may have to look it up on
-the internet if you don't have either of these.
+set of compilers to install the dependencies, primarily to avoid errors relating
+to compatibility of packages. For example, ``gcc4.9`` was downloaded through
+``sudo apt-get install gcc4.9``, or loaded through a network computer through
+something like a ``module load`` command. You may have to look it up on the
+internet if you don't have either of these.
 
 The order I did them in are:
 
@@ -39,7 +44,7 @@ The order I did them in are:
 4. netcdf (4.4.1.1) and netcdf-fortran (4.4.4), for XIOS
 
 Within a folder called ``gcc4.9-builds``, I added an extra ``extra_variables``
-file with extra variables for convenience:
+file containing the following:
 
 .. code-block:: bash
 
@@ -59,8 +64,8 @@ file with extra variables for convenience:
   
 Set this by doing ``source extra_variables``, and upon closing the terminal the
 variables will be flushed. Some of these may want to be added to ``~/.bashrc``
-for convenience anyway. If the variables are not set then additional variables
-and flags will need to be put in to ``./configure`` to tell the program to look
+for convenience. If the variables are not set then additional variables and
+flags will need to be provided for ``./configure`` to tell the program to look
 at the right places.
 
 .. note::
@@ -78,9 +83,9 @@ at the right places.
   
 Some or all of these may be skipped depending on which ones packages you have
 already installed and/or configured. The following installs all the libraries
-and binaries to a folder (``gcc4.9-builds`` for example), but if you have
-``sudo`` access you could always just install it to ``/usr/local``. The
-sub-directories in the folder are:
+and binaries to the folder specified in ``$BD``; you have ``sudo`` access you
+could always just install it to ``/usr/local``. The sub-directories in the
+folder are:
 
 * ``source``, where all the compressed files are going to live;
 * ``build``, where all the source file folders are going to live
@@ -154,25 +159,24 @@ the binaries, libraries and header files to include for later installations.
   
 .. note::
 
-  The ``./configure prefix=`` step requires an absolute (not relative) path.
-  Change this is you want to have it installed somewhere else, e.g.,
-  ``/usr/local`` if you have ``sudo`` access.
+  The ``./configure prefix=`` step requires an absolute (not relative) path;
+  change this to change the installation folder.
   
 
-HDF5 (and maybe zlib)
----------------------
+zlib and DF5
+------------
 
 Check whether HDF5 exists first (may still need to be installed again for
 compatibility reasons). ``h5copy`` is the command that should exist if HDF5 is
-installed.
+installed:
 
 .. code-block:: bash
   
   which h5copy
   h5copy --version
   
-If you still want to install it, then do the following (following the
-instructions on the `Unidata UCAR website
+If you still want to install both zlib and HDF5, then do the following
+(following the instructions on the `Unidata UCAR website
 <https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf-install/Quick-Instructions.html>`_).
 The raw files are taken from the HDF5 website using HDF5 v1.8.19. Again, with
 ``$BD`` as defined:
@@ -193,16 +197,10 @@ The raw files are taken from the HDF5 website using HDF5 v1.8.19. Again, with
   cd $BD/build/
   tar -xvzf $BD/source/hdf5-1.8.19.tar.gz
   cd hdf5-1.8.19
-  ./configure --disable-shared --enable-fortran --enable-cxx --prefix=$BD/install/
+  ./configure --disable-shared --enable-hl --enable-fortran --enable-cxx --prefix=$BD/install/
   make -j 2
   make check install
   cd $BD
-  
-.. warning::
-
-  HDF5 checking and installation can take a while (anything from 5 to 30 mins
-  depending...) If you are feeling brave you can just do ``make install``; do
-  this at your own risk...
   
 .. note::
   
@@ -213,16 +211,18 @@ The raw files are taken from the HDF5 website using HDF5 v1.8.19. Again, with
   will probably need to add ``--with-zlib=$BD/`` to the HDF5 ``./configure``
   command.
   
+  HDF5 checking and installation can take a while (anything from 5 to 30 mins).
+  
   You can also check the linking by doing e.g. ``ldd $BD/install/bin/h5copy``
   after installation, and see where ``libz.so.?`` is pointed to. If you did add
   things to ``$PATH``, then doing ``which h5copy`` should now show the intended
-  path; if not, check that ``echo $PATH`` has the intended directory before the
-  others.
+  path.
 
   The above uses ``--disable-shared`` which should be fine for private
   consumption, and I find it slightly less prone to errors. For a shared build,
-  swap out ``--disable-shared`` for ``--enable-shared``, and ``CFLAGS=-fPIC``
-  added to the above ``./configure`` for **both** HDF5 and zlib.
+  swap out ``--disable-shared`` for ``--enable-shared``, and add the
+  ``CFLAGS=-fPIC`` flag to **both** of the HDF5 and zlib ``./configure``
+  command.
 
 NetCDF4
 -------
@@ -263,23 +263,19 @@ netcdf-fortran v4.4.4:
   make check install
   cd $BD
   
-.. warning::
-
-  NetCDF4 checking and installation can take a while (anything from 5 to 30 mins
-  depending...) If you are feeling brave you can just do ``make install``; do
-  this at your own risk...
-  
 .. note::
 
   I had a problem with not having the m4 package, which I just installed as the
   installation commands above, with the binaries found from ``wget
   ftp://ftp.gnu.org/gnu/m4/m4-1.4.10.tar.gz``.
   
+  NetCDF4 checking and installation can take a while (anything from 5 to 30
+  mins).
+  
   Do the ``ldd`` and ``which`` commands to check which things are being pointed
   to. If the HDF5 and zlib libraries are not pointed to correctly, then consider
-  manually adding either the flags ``--with-hdf5=$BD/install/
-  --with-zlib=$BD/install/`` or ``CPPFLAGS=-I$BD/install/include
-  LDFLAGS=-L$BD/install/lib`` to the first ``./configure`` command.
+  manually adding the flags ``CPPFLAGS=-I$BD/install/include
+  LDFLAGS=-L$BD/install/lib`` to the ``./configure`` commands.
 
   For shared libraries, replace ``--disable-shared`` with ``--enabled-shared``.
 
