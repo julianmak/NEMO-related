@@ -6,27 +6,45 @@
 NEMO 3.6 (stable) + XIOS 1.0
 ============================
 
-Tested with: ``gcc-4.9``, Ubuntu 16.04, ``bashrc`` as configured in the page
-one level up.
+Tested with: ``gcc-4.9`` and ``gcc5.4`` on a Ubuntu 16.04 system.
 
 The assumption here is that the compiler is fixed and the packages (e.g.,
 NetCDF4 and a MPI bindings) are configured to be consistent with the compilers.
 See :ref:`here <sec:other-pack>` to check whether the binaries exist, where they
 are, and how they might be installed. All the ``#CHANGE ME`` highlighted below
-needs to be changed to point to the appropriate paths or binaries (links for
-binaries are ok). The compiler flags listed below seems to work fine with the
-choice of ``gcc4.9``.
+needs be modified to point to the appropriate paths or binaries (links for
+binaries are ok). 
+
+The instructions below assumes ``gcc4.9`` compilers but works for ``gcc5.4``
+compilers too (with one extra flag required in XIOS compilation). I additionally
+defined some extra variables
+
+.. code-block:: bash
+
+  export $BD=/home/julian/testing/gcc4.9-builds # CHANGE ME
+
+  export C_INCLUDE_PATH=$BD/install/include:$C_INCLUDE_PATH
+  export CPLUS_INCLUDE_PATH=$BD/install/include:$CPLUS_INCLUDE_PATH
+  export LIBRARY_PATH=$BD/install/lib:$LIBRARY_PATH
+  export LD_LIBRARY_PATH=$BD/install/lib:$LD_LIBRARY_PATH
+  
+otherwise I have found the resulting libraries and binaries are not necessarily
+linked to the right ones (I have a few versions of libraries at different places
+as a result of the testing recorded here).
 
 XIOS 1.0 (svn v703)
 -------------------
 
 To use NEMO you probably do need `XIOS <http://forge.ipsl.jussieu.fr/ioserver>`_
-to do the I/O. The instructions follow the one given in the `XIOS instructions
+to do the I/O. The instructions here follow the one given in the `XIOS instructions
 <http://forge.ipsl.jussieu.fr/ioserver/wiki/documentation>`_ with any errors
-that arise. Here XIOS1.0 is used with NEMO3.6 for compatibility reasons.
+that arise. A useful site to search for XIOS related errors may be found on the
+`XIOS user mailing list
+<https://forge.ipsl.jussieu.fr/mailman/private.cgi/xios-users/>`_.
 
-For the purposes here I created a folder called ``XIOS`` and used ``svn`` to get
-XIOS1.0 (which is going to be ``XIOS/xios1.0``):
+Here XIOS1.0 is used with NEMO3.6 for compatibility reasons. For the purposes
+here I created a folder called ``XIOS`` and used ``svn`` to get XIOS1.0 (which
+is going to be ``XIOS/xios1.0``):
 
 .. code-block:: none
 
@@ -94,12 +112,23 @@ the ``which`` commangs are pointing to the right place.
   %FPP            cpp-4.9 -P                          # CHANGE ME
   %MAKE           make
   
-Here I have again check the MPI locations by doing ``which mpicc`` and ``mpicc
---version`` say. If they are the right ones you could just have ``mpicc``
-instead of the full path as given above. MPI bindings are used here to avoid a
-possible error that may pop up in relation to the build trying to find
-``mpi.h``. The ``gmake`` command was swapped out by the ``make`` command (I
-don't have ``cmake``).
+Check the MPI locations by doing ``which mpicc`` and ``mpicc --version`` say. If
+they are the right ones you could just have ``mpicc`` instead of the full path
+as given above. MPI bindings are used here to avoid a possible error that may
+pop up in relation to the build trying to find ``mpi.h``. The ``gmake`` command
+was swapped out by the ``make`` command (I don't have ``cmake``).
+
+.. note ::
+
+  For ``gcc5.4`` and maybe newer versions, doing just the above leads to a whole
+  load of errors about clashing in C++:
+  
+  .. code-block:: bash
+    
+    .../include/boost/functional/hash/extensions.hpp:69:33: error: ‘template<class T, class A> std::size_t boost::hash_value’ conflicts with a previous declaration
+     std::size_t hash_value(std::list<T, A> const& v)
+                                 ^
+  Adding ``-D_GLIBCXX_USE_CXX11_ABI=0`` to ``%BASE_CFLAGS`` fixes these.
 
 .. code-block:: none
 
@@ -174,6 +203,11 @@ It should work and takes around 5 mins to compile for me. The main end result is
 are binaries in ``xios1.0/bin/`` which NEMO will call.
 
 .. note ::
+  
+  Do ``ldd bin/xios_server.exe`` (or wherever ``xios_server.exe``) lives to make
+  sure the libraries linked to it are the intended libraries. If not, it may
+  still work if the NetCDF versions are ok. If not, may need to go back and
+  define ``LD_LIBRARY_PATH`` and other variables accordingly; see above.
   
   ``xios_server.exe`` is one of the other binaries built from compiling but is
   not required for small runs on a laptop. For its use on a cluster see for

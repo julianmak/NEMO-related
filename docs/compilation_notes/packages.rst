@@ -23,9 +23,10 @@ Preliminaries
 
 .. note::
 
+  * Tested with ``gcc4.8`` and ``gcc5.4`` on a ubuntu system
+
   As of 18 Aug 2018, the following remains on the agenda:
   
-  * testing with ``gcc5.4``
   * testing with the intel compilers (using the Oxford system)
   * reproducing sample compatibility errors (using the Oxford system)
 
@@ -38,7 +39,7 @@ internet if you don't have either of these.
 
 The order I did them in are:
 
-1. mpich and hydra (to bind the set of compilers to a MPI form; I chose ``mpich`` but it should work on ``OpenMP`` too)
+1. mpich (to bind the set of compilers to a MPI form; I chose ``mpich`` but it should work on ``OpenMP`` too)
 2. zlib (1.2.11, for HDF5)
 3. hdf5 (1.8.19, for NetCDF)
 4. netcdf (4.4.1.1) and netcdf-fortran (4.4.4), for XIOS
@@ -148,16 +149,6 @@ in the ``$BD`` folder, I did:
   make -j 2
   make check install
   
-  cd $BD/source/
-  wget http://www.mpich.org/static/downloads/3.0.4/hydra-3.0.4.tar.gz
-  cd $BD/build/
-  tar -xvzf $BD/source/hydra-3.0.4.tar.gz
-  cd hydra-3.0.4
-  ./configure prefix=$BD/install/
-  make -j 2
-  make check install
-  cd $BD
-  
 Within ``install/`` there should now be some folders that can be pointed to for
 the binaries, libraries and header files to include for later installations.
   
@@ -210,20 +201,18 @@ The raw files are taken from the HDF5 website using HDF5 v1.8.19. Again, with
   
   At the end of the ``./configure`` for HDF5, check that ``AM_CPPFLAGS`` and
   ``AM_LDFLAGS`` are pointing to the directory you specified, otherwise it might
-  be pointing to an unintended version of zlib (like I have in this case for
-  testing reasons).
+  be pointing to an unintended version of zlib.
   
   HDF5 checking and installation can take a while (anything from 5 to 30 mins).
   
   I would do ``ldd h5copy`` (or wherever ``h5copy`` is installed at if the
-  direectory has not been added to ``$PATH``) to check that ``libhdf5`` does
-  point to where you think it should point to.
-
-  For a static build, swap out ``--enable-shared`` for
-  ``--disable-shared``, the ``CFLAGS=-fPIC`` may be removed, but appropriate
-  flags such as ``CPPFLAGS=-I$BD/install/include``,
-  ``LDFLAGS=-L$BD/install/lib``, and some things to do with ``LIBS="-lz -lhdf5``
-  etc. needs to be added to the HDF5 and NetCDF4 builds below. See `here
+  directory has not been added to ``$PATH``) to check that ``libhdf5`` does
+  point to where you think it should point to. If it isn't, then adding
+  appropriate flags such as ``CPPFLAGS=-I$BD/install/include``,
+  ``LDFLAGS=-L$BD/install/lib`` may help. These are also required for doing a
+  static build, and additionally swapping out ``--enable-shared`` for
+  ``--disable-shared``, and adding some things to do with ``LIBS="-lz -lhdf5``
+  etc. (the ``CFLAGS=-fPIC`` may be removed). See `here
   <https://www.unidata.ucar.edu/software/netcdf/docs/building_netcdf_fortran.html>`_
   for a guide.
 
@@ -274,18 +263,15 @@ netcdf-fortran v4.4.4:
   I would do ``ldd ncdump`` (or wherever ``ncdump`` was installed if the
   directory has not been added to ``$PATH``) and check that ``libnetcdf``,
   ``libhdf5`` and ``libz`` really does point to where you think it should point
-  to.
-
-  I had a problem with not having the m4 package, which I just installed as the
-  installation commands above, with the binaries found from ``wget
-  ftp://ftp.gnu.org/gnu/m4/m4-1.4.10.tar.gz``.
-  
-  Do the ``ldd`` and ``which`` commands to check which things are being pointed
   to. If the HDF5 and zlib libraries are not pointed to correctly, then consider
   manually adding the flags ``CPPFLAGS=-I$BD/install/include
   LDFLAGS=-L$BD/install/lib`` to the ``./configure`` commands. These variables
   along with ``LIBS`` need to be specified when building a static build as well
   (replacing the appropriate flags).
+
+  I had a problem with not having the m4 package, which I just installed as the
+  installation commands above, with the binaries found from ``wget
+  ftp://ftp.gnu.org/gnu/m4/m4-1.4.10.tar.gz``.
 
 This should be it! Try ``./install/bin/nc-config --all`` and/or
 ``./install/bin/nf-config --all`` to see where everything is configured. The

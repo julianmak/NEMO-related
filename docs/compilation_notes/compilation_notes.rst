@@ -17,9 +17,13 @@ While it is fairly straightforward on a supported cluster/supercomputer (e.g.
 first try following `NOCL ARCHER guide
 <https://nemo-nocl.readthedocs.io/en/latest/work_env/archer.html>`_) it can be a
 bit temperamental on a local machine a range of compatibility issues between
-compilers and packages can surface. Here are some things I have done to get NEMO
-working on my laptop with ``gcc-4.9`` for other reasons; my ``~/.bashrc`` has
-the following added:
+compilers and packages can surface. The following notes are what I did to get
+XIOS and NEMO compiling, and will display commands with ``gcc4.9`` compilers
+(which is my default for other reasons). Extra things that need to be modified
+for other compilers I have tested will be given accordingly (see the top of the
+individual pages as to which compilers I have tested the notes with).
+
+My ``~/.bashrc`` has the following added:
 
 .. code-block:: bash
 
@@ -29,8 +33,7 @@ the following added:
   export F77=/usr/bin/gfortran-4.9
   export CPP=/usr/bin/cpp-4.9
   
-which overrides the default ``gcc5.4`` on my computer. Testing with more recent
-versions of ``gcc`` and intel compilers ``icc\ifort`` will appear in due course.
+which overrides the default ``gcc5.4`` on my computer.
 
 .. toctree::
    :maxdepth: 2

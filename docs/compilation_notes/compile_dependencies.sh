@@ -70,7 +70,7 @@ wget ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-4.4.1.1.tar.gz
 cd $BD/build/
 tar -xvzf $BD/source/netcdf-4.4.1.1.tar.gz
 cd netcdf-4.4.1.1
-CPPFLAGS=-I$BD/install/include LDFLAGS=-L$BD/install/lib \
+#CPPFLAGS=-I$BD/install/include LDFLAGS=-L$BD/install/lib \
 ./configure --enable-shared --enable-netcdf4 --prefix=$BD/install/
 make -j 2
 make check install
@@ -81,7 +81,7 @@ wget ftp://ftp.unidata.ucar.edu/pub/netcdf/netcdf-fortran-4.4.4.tar.gz
 cd $BD/build/
 tar -xvzf $BD/source/netcdf-fortran-4.4.4.tar.gz
 cd netcdf-fortran-4.4.4
-CPPFLAGS=-I$BD/install/include LDFLAGS=-L$BD/install/lib \
+#CPPFLAGS=-I$BD/install/include LDFLAGS=-L$BD/install/lib \
 ./configure --enable-shared --prefix=$BD/install/
 make -j 2
 make check install
