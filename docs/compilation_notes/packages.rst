@@ -8,6 +8,11 @@
 Other packages
 ==============
 
+Tested with
+
+* ``gcc4.9``, ``gcc5.4`` on a laptop (Ubuntu 16.04)
+* ``gcc4.9`` on a modular system (Ubuntu 14.04, Oxford AOPP)
+
 The following packages are needed for NEMO and XIOS and they may need to be
 installed or configured accordingly. If you want a script to do all of the
 following in one go, then please scroll right to the bottom of this page.
@@ -19,11 +24,6 @@ following in one go, then please scroll right to the bottom of this page.
   compiled. If you can get a system manager to install the packages
   (particularly HDF5 and NetCDF4) it would save a lot of time, unless the
   compiled libraries itself are clashing...
-  
-  The following has been tested with:
-  
-  * ``gcc4.9``, ``gcc5.4`` on a local laptop
-  * ``gcc4.9`` on a modular system (Oxford AOPP computers)
   
   As of 21 Aug 2018, the following remains on the agenda:
   

@@ -6,7 +6,10 @@
 NEMO 3.6 (stable) + XIOS 1.0
 ============================
 
-Tested with: ``gcc-4.9`` and ``gcc5.4`` on a Ubuntu 16.04 system.
+Tested with
+
+* ``gcc4.9``, ``gcc5.4`` on a laptop (Ubuntu 16.04)
+* ``gcc4.9`` on a modular system (Ubuntu 14.04, Oxford AOPP)
 
 The assumption here is that the compiler is fixed and the packages (e.g.,
 NetCDF4 and a MPI bindings) are configured to be consistent with the compilers.
@@ -175,15 +178,15 @@ compiler issues that may arise.
     fcm_internal compile failed (256)
     /home/julian/testing/nemo-6800/xios-703/xios-1.0/Makefile:1620: recipe for target 'inetcdf4.o' failed
     
-  then doing ``find . -type f -iname "netcdf_par.h"`` shows that there is a copy
-  of the file in ``./extern/src_netcdf4/netcdf_par.h`` and it is not being
-  pointed to correctly. The culprit is in ``bld.cfg``:
+  then it is probably because NetCDF4 was not built as parallel. There is a 
+  actually a copy of the file in ``./extern/src_netcdf4/netcdf_par.h``, and
+  it could be pointed to by looking into ``bld.cfg``:
   
   .. code-block:: none
   
     bld::tool::cflags    %CFLAGS %CBASE_INC -I${PWD}/extern/src_netcdf -I${PWD}/extern/boost/include -I${PWD}/extern/rapidxml/include -I${PWD}/extern/blitz/include
     
-  where ``src_netcdf`` needs to be changed to ``src_netcdf4``.
+  where ``src_netcdf`` may be changed to ``src_netcdf4``.
   
 .. note ::
 
