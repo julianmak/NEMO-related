@@ -12,7 +12,7 @@ The following packages are needed for NEMO and XIOS and they may need to be
 installed or configured accordingly. If you want a script to do all of the
 following in one go, then please scroll right to the bottom of this page.
 
-.. Note:
+.. note:
 
   The main issue I have been founding is trying to get the compilations to call
   the correct versions of (static and/or dynamic) libraries that has been
