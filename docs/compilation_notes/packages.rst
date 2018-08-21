@@ -12,23 +12,27 @@ The following packages are needed for NEMO and XIOS and they may need to be
 installed or configured accordingly. If you want a script to do all of the
 following in one go, then please scroll right to the bottom of this page.
 
-.. Warning::
+.. Note:
 
-  The below in essence works but is still being tested (and is in fact failing
-  on another machine for reasons yet to be narrowed down). Please use with
-  caution.
+  The main issue I have been founding is trying to get the compilations to call
+  the correct versions of (static and/or dynamic) libraries that has been
+  compiled. If you can get a system manager to install the packages
+  (particularly HDF5 and NetCDF4) it would save a lot of time, unless the
+  compiled libraries itself are clashing...
+  
+  The following has been tested with:
+  
+  * ``gcc4.9``, ``gcc5.4`` on a local laptop
+  * ``gcc4.9`` on a modular system (Oxford AOPP computers)
+  
+  As of 21 Aug 2018, the following remains on the agenda:
+  
+  * intel compilers
+  * gcc on Mac OSX
+  * reproducing sample compatibility errors
 
 Preliminaries
 -------------
-
-.. note::
-
-  * Tested with ``gcc4.8`` and ``gcc5.4`` on a ubuntu system
-
-  As of 18 Aug 2018, the following remains on the agenda:
-  
-  * testing with the intel compilers (using the Oxford system)
-  * reproducing sample compatibility errors (using the Oxford system)
 
 The way I went about it was to first choose a set of compilers and use the same
 set of compilers to install the dependencies, primarily to avoid errors relating
@@ -183,7 +187,7 @@ The raw files are taken from the HDF5 website using HDF5 v1.8.19. Again, with
   cd $BD/build/
   tar -xvzf $BD/source/zlib-1.2.11.tar.gz
   cd zlib-1.2.11
-  CFLAGS=-fPIC ./configure --prefix=$BD/install/  
+  CFLAGS=-fPIC ./configure --prefix=$BD/install/
   make -j 2
   make check install
   
@@ -192,29 +196,34 @@ The raw files are taken from the HDF5 website using HDF5 v1.8.19. Again, with
   cd $BD/build/
   tar -xvzf $BD/source/hdf5-1.8.19.tar.gz
   cd hdf5-1.8.19
-  CFLAGS=-fPIC ./configure --enable-shared --enable-fortran --enable-cxx --prefix=$BD/install/
+  #CPPFLAGS=-I$BD/install/include LDFLAGS=-L$BD/install/lib \
+  CFLAGS=-fPIC ./configure --enable-shared --enable-fortran --enable-cxx \
+  # --with-zlib=$BD
+  --prefix=$BD/install/
   make -j 2
   make check install
   cd $BD
   
 .. note::
   
-  At the end of the ``./configure`` for HDF5, check that ``AM_CPPFLAGS`` and
-  ``AM_LDFLAGS`` are pointing to the directory you specified, otherwise it might
-  be pointing to an unintended version of zlib.
+  If ``LD_LIBRARY_PATH`` is set then accordingly then zlib should be detected by
+  the HDF5 install. If not, consider including the commented out ``CPPFLAGS``
+  and ``LDFLAGS`` or the ``--with-zlib`` line (or both).
   
-  HDF5 checking and installation can take a while (anything from 5 to 30 mins).
+  HDF5 checking and installation can take a while. If it's more that 30 mins
+  however it probably has crashed.
   
-  I would do ``ldd h5copy`` (or wherever ``h5copy`` is installed at if the
-  directory has not been added to ``$PATH``) to check that ``libhdf5`` does
-  point to where you think it should point to. If it isn't, then adding
-  appropriate flags such as ``CPPFLAGS=-I$BD/install/include``,
-  ``LDFLAGS=-L$BD/install/lib`` may help. These are also required for doing a
-  static build, and additionally swapping out ``--enable-shared`` for
-  ``--disable-shared``, and adding some things to do with ``LIBS="-lz -lhdf5``
-  etc. (the ``CFLAGS=-fPIC`` may be removed). See `here
+  If a shared build option was on, then you can do ``ldd h5copy`` (or wherever
+  ``h5copy`` is installed at if the directory has not been added to ``$PATH``)
+  to check that ``libhdf5`` does point to where you think it should point to. If
+  it isn't, then try the first point in this note.
+  
+  If an error shows up saying ``recompile with -fPIC``, then trying doing a
+  static build. Replace ``--enable-shared`` with ``--disable-shared`` and do the
+  first point in this note, possibly adding ``LIBS="-lz -lhdf5`` etc.; see `here
   <https://www.unidata.ucar.edu/software/netcdf/docs/building_netcdf_fortran.html>`_
-  for a guide.
+  for a guide. I would be tempted to keep the ``CFLAGS=-fPIC`` so shared builds
+  of NetCDF4 can still be made.
 
 NetCDF4
 -------
@@ -241,6 +250,7 @@ netcdf-fortran v4.4.4:
   cd $BD/build/
   tar -xvzf $BD/source/netcdf-4.4.1.1.tar.gz
   cd netcdf-4.4.1.1
+  #CPPFLAGS=-I$BD/install/include LDFLAGS=-L$BD/install/lib \
   ./configure --enable-netcdf4 --enable-shared --prefix=$BD/install/
   make -j 2
   make check install
@@ -250,6 +260,7 @@ netcdf-fortran v4.4.4:
   cd $BD/build/
   tar -xvzf $BD/source/netcdf-fortran-4.4.4.tar.gz
   cd netcdf-fortran-4.4.4
+  #CPPFLAGS=-I$BD/install/include LDFLAGS=-L$BD/install/lib \
   ./configure --enable-shared --prefix=$BD/install/
   make -j 2
   make check install
@@ -257,21 +268,22 @@ netcdf-fortran v4.4.4:
   
 .. note::
   
-  NetCDF4 checking and installation can take a while (anything from 5 to 30
-  mins).
+  NetCDF4 checking and installation can take a while. If it's more that 30 mins
+  however it probably has crashed.
   
-  I would do ``ldd ncdump`` (or wherever ``ncdump`` was installed if the
-  directory has not been added to ``$PATH``) and check that ``libnetcdf``,
-  ``libhdf5`` and ``libz`` really does point to where you think it should point
-  to. If the HDF5 and zlib libraries are not pointed to correctly, then consider
-  manually adding the flags ``CPPFLAGS=-I$BD/install/include
-  LDFLAGS=-L$BD/install/lib`` to the ``./configure`` commands. These variables
-  along with ``LIBS`` need to be specified when building a static build as well
-  (replacing the appropriate flags).
+  If a shared build option was on, then you can do ``ldd ncdump`` (or wherever
+  ``ncdump`` was installed if the directory has not been added to ``$PATH``) and
+  check that ``libnetcdf``, ``libhdf5`` and ``libz`` really does point to where
+  you think it should point to. If not, consider doing something similar to the
+  HDF5 note above.
+  
+  If an error shows up saying ``recompile with -fPIC``, then trying doing a
+  static build (I had this problem on one of the computers where the Fortran
+  part is static). See HDF5 note above.
 
   I had a problem with not having the m4 package, which I just installed as the
   installation commands above, with the binaries found from ``wget
-  ftp://ftp.gnu.org/gnu/m4/m4-1.4.10.tar.gz``.
+  ftp://ftp.gnu.org/gnu/m4/m4-1.4.10.tar.gz``. This is not in the script below.
 
 This should be it! Try ``./install/bin/nc-config --all`` and/or
 ``./install/bin/nf-config --all`` to see where everything is configured. The

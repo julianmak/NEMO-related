@@ -204,10 +204,10 @@ are binaries in ``xios1.0/bin/`` which NEMO will call.
 
 .. note ::
   
-  Do ``ldd bin/xios_server.exe`` (or wherever ``xios_server.exe``) lives to make
-  sure the libraries linked to it are the intended libraries. If not, it may
-  still work if the NetCDF versions are ok. If not, may need to go back and
-  define ``LD_LIBRARY_PATH`` and other variables accordingly; see above.
+  Do ``ldd bin/xios_server.exe`` (or wherever ``xios_server.exe`` lives) to make
+  sure the libraries linked to it are the intended libraries. XIOS may still
+  work if the NetCDF versions are ok, but if not, go back and define
+  ``LD_LIBRARY_PATH`` and other variables accordingly; see above.
   
   ``xios_server.exe`` is one of the other binaries built from compiling but is
   not required for small runs on a laptop. For its use on a cluster see for
@@ -229,7 +229,7 @@ to contain the NEMO codes and binaries:
 This checks out version 6800 (NEMO 3.6) and dumps it into a folder called
 ``nemo3.6-6800`` (change the target path to whatever you like). A similar
 procedure to specify compilers and where XIOS lives needs to be done for NEMO.
-Again, because I am using the ``gcc4.9`` compilers:
+Again, because I of the compilers I am using:
 
 .. code-block :: bash
   
@@ -296,17 +296,17 @@ at the reasoning and a log of errors that motivates the changes):
 
 .. note::
 
-  Before doing the following, it might be worthwhile doing
+  It might be worthwhile doing the following first:
   
   .. code-block :: bash
   
     cd ../CONFIG/
     ./makenemo -j0 -r GYRE -n GYRE_testing -m gfortran_local
     
-  and then editing ``/GYRE_testing/cpp_GYRE_testing.fcm`` to add the
-  ``key_nosignedzero`` key to the end. ``-j0`` doesn't do the compile but does
-  the folder creation and initial file copying. See the note at the bottom of
-  the page.
+  Then, edit add ``key_nosignedzero`` to the end
+  of``/GYRE_testing/cpp_GYRE_testing.fcm`` (see note at the bottom of the page).
+  ``-j0`` does all the folder creation and copying but doesn't do the compile
+  step.
 
 To compile a configuration (using the GYRE config):
   
@@ -347,8 +347,8 @@ for ``gyre`` in the `NEMO book
 
 .. note ::
 
-  My run actually crashed immediately. By looking into ``ocean.output`` and
-  searching for ``E R R O R`` shows that ``key_nosignedzero`` needs to be added
+  My run actually crashed immediately. Looking into ``ocean.output`` and
+  searching for ``E R R O R`` shows that ``key_nosignedzero`` needed to be added
   to ``/GYRE_testing/cpp_GYRE_testing.fcm``. Rebuilding with the key then works
   fine.
 
