@@ -3,6 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+.. _sec:pyCDFTOOLS:
+
 pyCDFTOOLS
 ==========
 
@@ -17,10 +19,10 @@ Python) I made a translation of sorts of `CDFTOOLS
 
 On the other hand, it is
 
-* not as complete, because I only translated ones that I needed...
+* not as complete, because I only translated ones that I needed (see `here <https://github.com/julianmak/NEMO-related/tree/master/pyCDFTOOLS>`_ for list)...
 * not as established and probably slightly error prone
 * not as fast (though things that I could not vectorise I used JIT to speed up the looping)
-* not NEMO code compliant (CDFTOOLS is designed to be conform to NEMO code conventions)
+* not NEMO code compliant (CDFTOOLS is designed to conform to NEMO code conventions)
 
 An additional criticism I have is that I wrote pyCDFTOOLS more like
 Fortran/MATLAB and not making full use of the Python functionalities (e.g.,
@@ -38,16 +40,16 @@ Grab it with:
 
   git clone https://github.com/julianmak/NEMO-related
   
-Some slightly more configuration/model specific Python scripts and notebooks in
-other folders (e.g., ``GYRE`` and ``ORCA``). I tend to just do
+Some slightly more configuration/model specific Python scripts and notebooks are
+in other folders (e.g., ``GYRE`` and ``ORCA``). I tend to just do
 
 .. code-block:: bash
 
   cd GYRE
   rsync -arv ../pyCDFTOOLS .
   
-which then means the scripts and notebooks have access to the module and it
-separates out a version that I do testing on.
+which then means the scripts and notebooks within the folder have access to the
+module, and it separates out a version that I do testing on.
 
 CDFTOOLS itself depends on the following packages (the things I think that come
 as standard are omitted):
@@ -57,13 +59,25 @@ as standard are omitted):
 * netCDF4 (for reading)
 * scipy (for the occasional times when a MATLAB file is read)
 
-You can grab CDFTOOLS for comparison as follows:
+The configuration specific programs depend additionally on Matplotlib and a
+whole load of other ones for the ORCA configuration; see the relevant pages. I
+installed most of the things through `Anaconda
+<https://www.anaconda.com/download/#linux>`_; see the :ref:`Python <sec:python>`
+page here for my notes on these.
+
+Use these scripts at your own risk and feel free to modify them (rights etc. as
+stated in the license and in line with the CDFTOOLS one). For comparison
+purposes you may also want to grab CDFTOOLS to compare results (see the
+`CDFTOOLS <https://github.com/meom-group/CDFTOOLS>`_ page):
 
 .. code-block:: bash
 
   git clone https://github.com/meom-group/CDFTOOLS
   
-
+.. note::
+  
+  The programs I have uploaded I was satisfied enough with the tests I have
+  done, but don't just take my word for it :-)
 
 
 
