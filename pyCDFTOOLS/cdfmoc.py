@@ -58,6 +58,8 @@ def cdfmoc(data_dir, v_file, v_var, **kwargs):
     lg_vvl   = True   for using s-coord (time-varying metric)
     ldec     = True   decompose the MOC into some components
     lbas     = True   decompose the MOC into basins (need a new_maskglo.nc with default variable names)
+    leiv     = True   for adding the eddy induced velocity component
+      eivv_var = string for EIV-v variable name
     
   Returns:
     zW (gdepw_1d), latV (rdumlat), dmoc for plotting, opt_dic for record
@@ -67,7 +69,8 @@ def cdfmoc(data_dir, v_file, v_var, **kwargs):
              "lprint" : False,
              "lg_vvl" : False,
              "ldec"   : False,
-             "lbas"   : False}
+             "lbas"   : False,
+             "leiv"   : False}
 
   # overwrite the options by cycling through the input dictionary
   for key in kwargs:
@@ -83,6 +86,10 @@ def cdfmoc(data_dir, v_file, v_var, **kwargs):
   zv      = cf_vfil.variables[v_var][opt_dic["kt"], :, :, :]
   if opt_dic["lg_vvl"]:
     e3v     = cf_vfil.variables["e3v"][opt_dic["kt"], :, :, :]
+  if opt_dic["leiv"]:
+    # load and add the contribution to zv
+    zeiv    = cf_vfil.variables[opt_dic["eivv_var"]][opt_dic["kt"], :, :, :]
+    zv += zeiv
   cf_vfil.close()
   
   cn_mask = Dataset(data_dir + "mesh_mask.nc")
