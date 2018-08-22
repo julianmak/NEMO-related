@@ -17,9 +17,10 @@ adding to the content here.
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+   :titlesonly:
    
    compilation_notes/compilation_notes
-   using_nemo/using_nemo
+   nemo_notes/nemo_notes
    GEOMETRIC/geometric
    adding_content/adding_content
 

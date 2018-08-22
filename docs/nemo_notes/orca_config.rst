@@ -3,22 +3,16 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-NEMO implementation details
-===========================
+Global configuration (ORCA grid)
+================================
 
-.. _sec:nemo-adv:
+Brief description
+-----------------
 
-advection
----------
+Usage
+-----
 
-.. _sec:nemo-sou:
-
-source
-------
-
-.. _sec:nemo-dis:
-
-dissipation
------------
+Visualisation scripts
+---------------------
 
 

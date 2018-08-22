@@ -3,22 +3,18 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-NEMO implementation details
-===========================
+Rotated Gyre model
+==================
 
-.. _sec:nemo-adv:
+Brief description
+-----------------
 
-advection
----------
+Usage
+-----
 
-.. _sec:nemo-sou:
+Visualisation scripts
+---------------------
 
-source
-------
 
-.. _sec:nemo-dis:
-
-dissipation
------------
 
 

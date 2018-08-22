@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-files
-=====
+NEMO files
+==========
 
 Below are sample files or file generators you may need for using GEOMETRIC in
 NEMO.

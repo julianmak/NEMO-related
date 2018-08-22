@@ -131,6 +131,7 @@ was swapped out by the ``make`` command (I don't have ``cmake``).
     .../include/boost/functional/hash/extensions.hpp:69:33: error: ‘template<class T, class A> std::size_t boost::hash_value’ conflicts with a previous declaration
      std::size_t hash_value(std::list<T, A> const& v)
                                  ^
+  
   Adding ``-D_GLIBCXX_USE_CXX11_ABI=0`` to ``%BASE_CFLAGS`` fixes these.
 
 .. code-block:: none
