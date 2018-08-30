@@ -15,7 +15,7 @@
 #
 
 import netCDF4
-import os, glob, sys
+import glob, sys
 from numpy import asarray, float64
 
 def scalar_to_txt(data_dir, query = False):
