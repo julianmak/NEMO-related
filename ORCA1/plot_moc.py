@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
 
+# JM: 30 Aug 2018
+# plots the MOC averaged at fixed height, styling is default and this script
+# is intended to be used for quick and dirty visualisations
+
 import matplotlib.pyplot as plt
 from numpy import linspace, amax, where
 from pyCDFTOOLS.cdfmoc import *
@@ -46,9 +50,18 @@ kwargs = {"lprint" : args.lprint,
           "lg_vvl" : args.lg_vvl,
           "lbas"   : args.lbas}
 
+if args.lg_vvl:
+  print(" ")
+  print("using time-varying metric e3v")
+  
+if args.lbas:
+  print(" ")
+  print("using basin decomposition")
+
 if args.eivv_var is not None:
   kwargs["leiv"] = True
   kwargs["eivv_var"] = args.eivv_var
+  print("including eddy induced velocity...")
 
 zW, latV, dmoc, opt_dic = cdfmoc(args.data_dir, args.fileV, args.v_var, **kwargs)
 

@@ -34,6 +34,8 @@ from numba import jit, int32 # need explicit type for use within jit
 from numpy import zeros, argmax, unravel_index, linspace, maximum, minimum, where
 from netCDF4 import Dataset
 
+import numpy as np
+
 def cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs):
   """
   Compute the MOC in density co-ordinates
