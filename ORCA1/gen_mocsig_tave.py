@@ -141,7 +141,7 @@ print(" ")
 print("returning final time-averaged field")
 
 #--------------------------------------------------------
-# write the file
+# saving commands
 
 latV_mesh = np.zeros(depi[0, :, :].shape)
 for j in range(latV_mesh.shape[0]):

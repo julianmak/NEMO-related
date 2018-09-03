@@ -4,6 +4,8 @@
 # plots the MOC averaged at fixed height, styling is default and this script
 # is intended to be used for quick and dirty visualisations
 
+import matplotlib
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
 from numpy import linspace, amax, where
 from pyCDFTOOLS.cdfmoc import *
@@ -43,7 +45,6 @@ parser.add_argument("--eivv_var",   type = str,
 args = parser.parse_args()
 
 #--------------------------------------------------------
-
 # Main plotting commands
 
 kwargs = {"lprint" : args.lprint,
@@ -134,6 +135,9 @@ else:
   plt.title("Global")
   cb = plt.colorbar()
   cb.ax.set_title(r"$\mathrm{Sv}$")
+  
+#--------------------------------------------------------
+# saving commands
 
 save_filename = args.fileV.replace(".nc", "") + "_zMOC.png"
 

@@ -15,7 +15,7 @@
 #
 
 import netCDF4
-import glob, sys
+import glob, sys, re
 from numpy import asarray, float64
 
 def scalar_to_txt(data_dir, query = False):
@@ -221,7 +221,7 @@ def read_vol_transport(data_dir, key):
   # grab the relevant filenames
   file_list = []
   for file in glob.glob(data_dir + "volume_transport*"):
-      file_list.append(file) 
+    file_list.append(file) 
       
   if not file_list:
     print("no files grabbed, are you in the right directory?")
@@ -233,15 +233,17 @@ def read_vol_transport(data_dir, key):
 
   data_dump = []
   for filename in file_list:
-      with open(filename) as f:
-          for line in f:
-              if key in line: # this needs to match case for case
-                  data_dump.append(line)
+    with open(filename) as f:
+      for line in f:
+        if re.search("\s" + key + "\s", line):    
+        #if key in line: # this needs to match case for case
+          data_dump.append(line)
                   
   # define some lists to dump entries, then turn them into array
   time = []
   data_array = []
-  for i in range(1, len(data_dump), 2): # pick out the total line
+  for i in range(len(data_dump)):
+    if "total" in data_dump[i]: # pick out only the total line
       time.append(int(data_dump[i].split()[0][0:-4])) # strip out the last four digits
       data_array.append(float(data_dump[i].split()[11]))
 
