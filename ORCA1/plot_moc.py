@@ -80,13 +80,12 @@ if args.lbas:
   NADW_dep = zW[zW_mask][NADW_index[0]][0]
 
   ax1 = plt.subplot(3, 1, 1)
-  plt.contourf(latV, zW, dmoc[0, :, :], linspace(-20, 20, 21), cmap = "RdBu_r", extend = "both")
-  plt.plot(NADW_lat, NADW_dep, "k+")
-  plt.text(NADW_lat - 10, NADW_dep - 500, "NADW = %.1f Sv" % NADW_strength)
-  #plt.xlabel(r"Lat (${}^\circ$)")
-  plt.ylabel(r"z ($\mathrm{m}$)")
-  plt.title("Global")
-  cb = plt.colorbar()
+  mesh1 = ax1.contourf(latV, zW, dmoc[0, :, :], linspace(-20, 20, 21), cmap = "RdBu_r", extend = "both")
+  ax1.plot(NADW_lat, NADW_dep, "k+")
+  ax1.text(NADW_lat - 10, NADW_dep - 500, "NADW = %.1f Sv" % NADW_strength)
+  ax1.set_ylabel(r"z ($\mathrm{m}$)")
+  ax1.set_title("Global")
+  cb = plt.colorbar(mesh1)
   cb.ax.set_title(r"$\mathrm{Sv}$")
   
   rmoc_select = dmoc[1, zW_mask, :][:, latV_mask]
@@ -98,20 +97,19 @@ if args.lbas:
   NADW_dep = zW[zW_mask][NADW_index[0]][0]
 
   ax2 = plt.subplot(3, 1, 2)
-  plt.contourf(latV, zW, dmoc[1, :, :], linspace(-20, 20, 21), cmap = "RdBu_r", extend = "both")
-  plt.plot(NADW_lat, NADW_dep, "k+")
-  plt.text(NADW_lat - 10, NADW_dep - 500, "NADW = %.1f Sv" % NADW_strength)
-  #plt.xlabel(r"Lat (${}^\circ$)")
-  plt.ylabel(r"z ($\mathrm{m}$)")
-  plt.title("Atlantic")
-  cb = plt.colorbar()
+  mesh2 = ax2.contourf(latV, zW, dmoc[1, :, :], linspace(-20, 20, 21), cmap = "RdBu_r", extend = "both")
+  ax2.plot(NADW_lat, NADW_dep, "k+")
+  ax2.text(NADW_lat - 10, NADW_dep - 500, "NADW = %.1f Sv" % NADW_strength)
+  ax2.set_ylabel(r"z ($\mathrm{m}$)")
+  ax2.set_title("Atlantic")
+  cb = plt.colorbar(mesh2)
 
   ax3 = plt.subplot(3, 1, 3)
-  plt.contourf(latV, zW, dmoc[0, :, :] - dmoc[1, :, :], linspace(-20, 20, 21), cmap = "RdBu_r", extend = "both")
-  plt.xlabel(r"Lat (${}^\circ$)")
-  plt.ylabel(r"z ($\mathrm{m}$)")
-  plt.title("Not Atlantic")
-  cb = plt.colorbar()
+  mesh3 = ax3.contourf(latV, zW, dmoc[0, :, :] - dmoc[1, :, :], linspace(-20, 20, 21), cmap = "RdBu_r", extend = "both")
+  ax3.set_xlabel(r"Lat (${}^\circ$)")
+  ax3.set_ylabel(r"z ($\mathrm{m}$)")
+  ax3.set_title("Not Atlantic")
+  cb = plt.colorbar(mesh3)
   
 else:
 
@@ -127,13 +125,14 @@ else:
 
   # plot
   fig = plt.figure(figsize=(10, 3))
-  plt.contourf(latV, zW, dmoc[0, :, :], linspace(-20, 20, 21), cmap = "RdBu_r", extend = "both")
-  plt.plot(NADW_lat, NADW_dep, "k+")
-  plt.text(NADW_lat - 10, NADW_dep - 500, "NADW = %.1f Sv" % NADW_strength)
-  plt.xlabel(r"Lat (${}^\circ$)")
-  plt.ylabel(r"z ($\mathrm{m}$)")
-  plt.title("Global")
-  cb = plt.colorbar()
+  ax = plt.axes()
+  mesh = ax.contourf(latV, zW, dmoc[0, :, :], linspace(-20, 20, 21), cmap = "RdBu_r", extend = "both")
+  ax.plot(NADW_lat, NADW_dep, "k+")
+  ax.text(NADW_lat - 10, NADW_dep - 500, "NADW = %.1f Sv" % NADW_strength)
+  ax.set_xlabel(r"Lat (${}^\circ$)")
+  ax.set_ylabel(r"z ($\mathrm{m}$)")
+  ax.set_title("Global")
+  cb = plt.colorbar(mesh)
   cb.ax.set_title(r"$\mathrm{Sv}$")
   
 #--------------------------------------------------------

@@ -86,54 +86,54 @@ lon_index = np.where(dummy == np.amin(abs(dummy)))[0][0]
 
 fig = plt.figure(figsize = (8, 16))
 
-plt.subplot(3, 1, 1)
-mesh = plt.contourf(latT[:, lon_index], depth, thetaT[:, :, lon_index],
-                    np.arange(-2, 30, 1), cmap = "RdBu_r", extend = "both")
-plt.gca().set_facecolor('gray')
-line = plt.contour(latT[:, lon_index], depth, thetaT[:, :, lon_index], levels = [0, 10, 20, 30],
+ax1 = plt.subplot(3, 1, 1)
+mesh1 = ax1.contourf(latT[:, lon_index], depth, thetaT[:, :, lon_index],
+                     np.arange(-2, 30, 1), cmap = "RdBu_r", extend = "both")
+ax1.set_facecolor('gray')
+line = ax1.contour(latT[:, lon_index], depth, thetaT[:, :, lon_index], levels = [0, 10, 20, 30],
                    colors = "k")
-plt.clabel(line, fmt = "%2.0f", colors = 'k')
-line = plt.contour(latT[:, lon_index], depth, thetaT[:, :, lon_index], levels = [4],
+ax1.clabel(line, fmt = "%2.0f", colors = 'k')
+line = ax1.contour(latT[:, lon_index], depth, thetaT[:, :, lon_index], levels = [4],
                    colors = "k", linestyles = "--")
-plt.clabel(line, fmt = "%2.1f", colors = 'k')
-plt.xlim(-75, 60)
-plt.ylabel(r"$z$ ($\mathrm{m}$)")
-plt.title(r"temeprature at Lon = %s" % lon_str)
-cb = plt.colorbar(mesh)
+ax1.clabel(line, fmt = "%2.1f", colors = 'k')
+ax1.set_xlim(-75, 60)
+ax1.set_ylabel(r"$z$ ($\mathrm{m}$)")
+ax1.set_title(r"temeprature at Lon = %s" % lon_str)
+cb = plt.colorbar(mesh1)
 cb.ax.set_title(r"${}^\circ\ \mathrm{C}$")
 
-plt.subplot(3, 1, 2)
-mesh = plt.contourf(latT[:, lon_index], depth, salinT[:, :, lon_index],
-                    np.arange(33.5, 37.5, 0.1), cmap = "gist_rainbow_r", extend = "both")
-plt.gca().set_facecolor('gray')
-line = plt.contour(latT[:, lon_index], depth, salinT[:, :, lon_index], levels = [34, 35, 36],
+ax2 = plt.subplot(3, 1, 2)
+mesh2 = ax2.contourf(latT[:, lon_index], depth, salinT[:, :, lon_index],
+                     np.arange(33.5, 37.5, 0.1), cmap = "gist_rainbow_r", extend = "both")
+ax2.set_facecolor('gray')
+line = ax2.contour(latT[:, lon_index], depth, salinT[:, :, lon_index], levels = [34, 35, 36],
                    colors = "k")
-plt.clabel(line, fmt = "%2.0f", colors = 'k')
-line = plt.contour(latT[:, lon_index], depth, salinT[:, :, lon_index], levels = [34.5],
+ax2.clabel(line, fmt = "%2.0f", colors = 'k')
+line = ax2.contour(latT[:, lon_index], depth, salinT[:, :, lon_index], levels = [34.5],
                    colors = "k", linestyles = "--")
-plt.clabel(line, fmt = "%2.2f", colors = 'k')
-plt.ylabel(r"$z$ ($\mathrm{m}$)")
-plt.xlim(-75, 60)
-plt.title(r"salinity at Lon = %s" % lon_str)
-cb = plt.colorbar(mesh)
+ax2.clabel(line, fmt = "%2.2f", colors = 'k')
+ax2.set_ylabel(r"$z$ ($\mathrm{m}$)")
+ax2.set_xlim(-75, 60)
+ax2.set_title(r"salinity at Lon = %s" % lon_str)
+cb = plt.colorbar(mesh2)
 cb.ax.set_title(r"$\mathrm{g}\ \mathrm{kg}^{-1}$")
 
 # compute the relevant sigma2 on the fly
 # potential density referenced to 2000m depth
 sigma2 = eos.sigmai_dep(thetaT[:, :, lon_index], salinT[:, :, lon_index], 2000)
 
-plt.subplot(3, 1, 3)
-mesh = plt.contourf(latT[:, lon_index], depth, sigma2,
-                    np.arange(30, 37.5, 0.25), cmap = "gist_rainbow_r", extend = "both", norm = MidPointNorm(midpoint = 35))
-plt.gca().set_facecolor('gray')
-line = plt.contour(latT[:, lon_index], depth, sigma2, levels = [36.9],
+ax3 = plt.subplot(3, 1, 3)
+mesh3 = ax3.contourf(latT[:, lon_index], depth, sigma2,
+                     np.arange(30, 37.5, 0.25), cmap = "gist_rainbow_r", extend = "both", norm = MidPointNorm(midpoint = 35))
+ax3.set_facecolor('gray')
+line = ax3.contour(latT[:, lon_index], depth, sigma2, levels = [36.9],
                    colors = "k")
-plt.clabel(line, fmt = r"$\sigma_2$ = %2.1f", colors = 'k')
-plt.xlim(-75, 60)
-plt.xlabel(r"Lat (${}^\circ$)")
-plt.ylabel(r"$z$ ($\mathrm{m}$)")
-plt.title(r"$\sigma_2 - 1000$ at Lon = %s" % lon_str)
-cb = plt.colorbar(mesh)
+ax3.clabel(line, fmt = r"$\sigma_2$ = %2.1f", colors = 'k')
+ax3.set_xlim(-75, 60)
+ax3.set_xlabel(r"Lat (${}^\circ$)")
+ax3.set_ylabel(r"$z$ ($\mathrm{m}$)")
+ax3.set_title(r"$\sigma_2 - 1000$ at Lon = %s" % lon_str)
+cb = plt.colorbar(mesh3)
 cb.ax.invert_yaxis()
 cb.ax.set_title(r"$\mathrm{kg}\ \mathrm{m}^{-3}$")
   

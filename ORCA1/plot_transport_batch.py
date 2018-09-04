@@ -66,7 +66,7 @@ if args.ylim is None:
 fig = plt.figure(figsize=(10, 4)) # dpi shouldn't matter for pdf outputs
 
 ax1 = plt.axes()
-lines = plt.plot(time, transport, label = exp_name)
+lines = ax1.plot(time, transport, label = exp_name)
 
 if args.exp_key is not None:
   for i in range(len(args.exp_key)):
@@ -76,13 +76,13 @@ if args.exp_key is not None:
     line = plt.plot(time, transport, label = args.exp_key[i])
     lines += line
     
-plt.xlabel(r"$t$ ($\mathrm{yrs}$)")
-plt.ylabel(r"Transport ($\mathrm{Sv}$)")
-plt.xlim(args.xlim[0], args.xlim[1])
-plt.ylim(args.ylim[0], args.ylim[1])
-plt.title(args.str_key)
-plt.grid()
-plt.legend(handles = lines, loc = 4, ncol = 2, fontsize = "x-small")
+ax1.set_xlabel(r"$t$ ($\mathrm{yrs}$)")
+ax1.set_ylabel(r"Transport ($\mathrm{Sv}$)")
+ax1.set_xlim(args.xlim[0], args.xlim[1])
+ax1.set_ylim(args.ylim[0], args.ylim[1])
+ax1.set_title(args.str_key)
+ax1.grid()
+ax1.legend(handles = lines, loc = 4, ncol = 2, fontsize = "x-small")
 
 #--------------------------------------------------------
 # Saving commands

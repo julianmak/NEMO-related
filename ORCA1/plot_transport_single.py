@@ -59,12 +59,12 @@ fig = plt.figure(figsize=(10, 4)) # dpi shouldn't matter for pdf outputs
 
 ax1 = plt.axes()
 line1 = plt.plot(time, transport, 'b', label = r"Transport")
-plt.xlabel(r"$t$ ($\mathrm{yrs}$)")
-plt.ylabel(r"Transport ($\mathrm{Sv}$)")
-plt.xlim(args.xlim[0], args.xlim[1])
-plt.ylim(args.ylim[0], args.ylim[1])
-plt.title(args.str_key)
-plt.grid()
+ax1.set_xlabel(r"$t$ ($\mathrm{yrs}$)")
+ax1.set_ylabel(r"Transport ($\mathrm{Sv}$)")
+ax1.set_xlim(args.xlim[0], args.xlim[1])
+ax1.set_ylim(args.ylim[0], args.ylim[1])
+ax1.set_title(args.str_key)
+ax1.grid()
 
 lines = line1
 
@@ -78,13 +78,13 @@ if args.l_temp:
     args.tylim.append(max(mean_temp) + 0.2)
 
   ax2 = ax1.twinx()
-  line2 = plt.plot(time, mean_temp, 'r', label = r"$\left\langle\theta\right\rangle$")
-  plt.ylim(args.tylim[0], args.tylim[1])
-  plt.ylabel(r"$\left\langle\theta\right\rangle$ (${}^\circ\mathrm{C}$)")
+  line2 = ax2.plot(time, mean_temp, 'r', label = r"$\left\langle\theta\right\rangle$")
+  ax2.set_ylim(args.tylim[0], args.tylim[1])
+  ax2.set_ylabel(r"$\left\langle\theta\right\rangle$ (${}^\circ\mathrm{C}$)")
 
   lines += line2
 
-plt.legend(handles = lines, loc=4)
+ax1.legend(handles = lines, loc=4)
 
 #--------------------------------------------------------
 # Saving commands
