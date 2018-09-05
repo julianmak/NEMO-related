@@ -40,6 +40,9 @@ parser.add_argument("--lbas",
                     help = "use basin decomposition (assumes there is a new_maskglo.nc in data_dir)", action = "store_true")
 parser.add_argument("--eivv_var",   type = str,
                     help = "add the eddy induced velocity (give the variable name here)")
+                    
+parser.add_argument("--file_out",  type = str, 
+                    help = "specify output name (default = fileV + _zMOC.png)") 
 
 # collect arguments
 args = parser.parse_args()
@@ -138,9 +141,10 @@ else:
 #--------------------------------------------------------
 # saving commands
 
-save_filename = args.fileV.replace(".nc", "") + "_zMOC.png"
+if args.file_out is None:
+  args.file_out = args.fileV.replace(".nc", "") + "_zMOC.png"
 
-fig.savefig(save_filename, dpi = 300, bbox_inches = "tight")
+fig.savefig(args.file_out, dpi = 300, bbox_inches = "tight")
 plt.close(fig)
 
-print("generated %s , exiting..." % save_filename)
+print("generated %s , exiting..." % args.file_out)

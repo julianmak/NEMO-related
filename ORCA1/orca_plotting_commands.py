@@ -218,8 +218,8 @@ def carree_tricontourf(x_coord, y_coord, plot_data, ax = None, levels = 20):
 
   # magic command to get rid of white lines in contourf outputs
   for c in mesh.collections:
-    c.set_edgecolor("face")
-    
+      c.set_edgecolor("face")
+
   return (ax, mesh)
   
 #-------------------------------------------------------------------------------
@@ -270,8 +270,8 @@ def cartopy_contourf(x_coord, y_coord, plot_data, ax = None,
   
   # magic command to get rid of white lines in contourf outputs
   for c in mesh.collections:
-    c.set_edgecolor("face")
-    
+      c.set_edgecolor("face")
+  
   return (ax, mesh)
 
 #-------------------------------------------------------------------------------
@@ -297,7 +297,7 @@ def load_var_2d(data_dir, filename, var_name, kt = 0, lprint = False):
   if lprint:
     print(file_netcdf4)
     
-  time_vec = files_netcdf4.variables["time_instant"][:]
+  time_vec = files_netcdf4.variables["time_centered"][:]
   time_vec = (time_vec - time_vec[0]) / (3600 * 24) # time vector in days
   var = files_netcdf4.variables[var_name][kt, :, :]
   lat = files_netcdf4.variables["nav_lat"][:, :]
@@ -329,7 +329,7 @@ def load_var_3d(data_dir, filename, var_name, kt = 0, lprint = False):
   if lprint:
     print(file_netcdf4)
     
-  time_vec = files_netcdf4.variables["time_instant"][:]
+  time_vec = files_netcdf4.variables["time_centered"][:]
   time_vec = (time_vec - time_vec[0]) / (3600 * 24) # time vector in days
   var = files_netcdf4.variables[var_name][kt, :, :, :]
   lat = files_netcdf4.variables["nav_lat"][:, :]
@@ -363,3 +363,4 @@ def load_mask(data_dir, filename, var_name, lprint = False):
   files_netcdf4.close()
   
   return var
+

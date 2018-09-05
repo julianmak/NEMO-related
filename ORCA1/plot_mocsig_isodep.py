@@ -45,6 +45,9 @@ parser.add_argument("--ylim", nargs = 2, type = float,
                     help = "specify the latitude range to plot over if any")
 parser.add_argument("--zlim", nargs = 2, type = float,
                     help = "specify the depth range to plot over if any")
+                    
+parser.add_argument("--file_out",  type = str, 
+                    help = "specify output name (default = fileMOC + _sigmaMOC.png)")
 
 # collect arguments
 args = parser.parse_args()
@@ -161,9 +164,10 @@ cb.ax.set_title(r"Sv")
 #--------------------------------------------------------
 # saving commands
 
-save_filename = args.fileMOC.replace(".nc", "") + "_sigmaMOC.png"
+if args.file_out is None:
+  args.file_out = args.fileMOC.replace(".nc", "") + "_sigmaMOC.png"
 
-fig.savefig(save_filename, dpi = 300, bbox_inches = "tight")
+fig.savefig(args.file_out, dpi = 300, bbox_inches = "tight")
 plt.close(fig)
 
-print("generated %s , exiting..." % save_filename)
+print("generated %s , exiting..." % args.file_out)

@@ -36,6 +36,9 @@ parser.add_argument("--l_temp",
                     help = "plot the mean temperature as well on the same plot", action = "store_true")
 parser.add_argument("--tylim", nargs = 2, type = float,
                     help = "specify the temperature range to plot over if any")
+                    
+parser.add_argument("--file_out",  type = str, 
+                    help = "specify output name (default = str_key + _transport.pdf)") 
 
 # collect arguments
 args = parser.parse_args()
@@ -89,10 +92,11 @@ ax1.legend(handles = lines, loc=4)
 #--------------------------------------------------------
 # Saving commands
 
-save_filename = args.str_key + "_transport.pdf"
+if args.file_out is None:
+  args.file_out = args.str_key + "_transport.pdf"
 
-fig.savefig(save_filename, bbox_inches = "tight")
+fig.savefig(args.file_out, bbox_inches = "tight")
 
-print("generated %s , exiting..." % save_filename)
+print("generated %s , exiting..." % args.file_out)
 
 

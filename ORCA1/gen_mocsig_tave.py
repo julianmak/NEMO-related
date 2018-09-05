@@ -123,7 +123,7 @@ print("%g files found, cycling through them..." % len(file_list))
 
 for i in range(len(file_list)):
     fileV = file_list[i].replace(args.data_dir, "") # strip out the data_dir
-    fileT = fileV.replace("_V_", "_T_") # replace V with T
+    fileT = fileV.replace("_V", "_T") # replace V with T
     print(" ")
     print("working in file = %g / %g" % (i + 1, len(file_list)))
     if i == 0:
