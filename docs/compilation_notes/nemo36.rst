@@ -2,6 +2,8 @@
    sphinx-quickstart on Wed Jul  4 10:59:03 2018.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
+   
+.. _sec:nemo36:
 
 NEMO 3.6 (stable) + XIOS 1.0
 ============================
@@ -84,7 +86,7 @@ You could check where the HDF5 and NetCDF4 directories are by doing ``which
 h5copy`` and ``which nc-config``, which should give you a ``directory/bin``, and
 it is the ``directory`` part you want. If you did install the libraries
 somewhere else as in :ref:`other packages <sec:other-pack>`, say, then make sure
-the ``which`` commangs are pointing to the right place.
+the ``which`` commands are pointing to the right place.
 
 .. code-block:: none
 
@@ -123,8 +125,8 @@ was swapped out by the ``make`` command (I don't have ``cmake``).
 
 .. note ::
 
-  For ``gcc5.4`` and maybe newer versions, doing just the above leads to a whole
-  load of errors about clashing in C++:
+  For ``gcc5.4`` and maybe newer versions, doing just the above when compiling
+  leads to a whole load of errors about clashing in C++:
   
   .. code-block:: bash
     
@@ -187,7 +189,7 @@ compiler issues that may arise.
   
     bld::tool::cflags    %CFLAGS %CBASE_INC -I${PWD}/extern/src_netcdf -I${PWD}/extern/boost/include -I${PWD}/extern/rapidxml/include -I${PWD}/extern/blitz/include
     
-  where ``src_netcdf`` may be changed to ``src_netcdf4``.
+  where ``src_netcdf`` should be changed to ``src_netcdf4``.
   
 .. note ::
 
@@ -265,7 +267,7 @@ detailed log of how I got to the following):
 
   %NCDF_HOME           /usr/local                                       # CHANGE ME
 
-  %XIOS_HOME           /home/julian/testing/nemo-6800/xios-703/xios-1.0 # CHANGE ME
+  %XIOS_HOME           /home/julian/testing/gcc4.9-builds/XIOS/xios-1.0 # CHANGE ME
 
   %CPP	               cpp-4.9                                          # CHANGE ME
   %CPPFLAGS            -P -traditional
