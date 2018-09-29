@@ -317,13 +317,13 @@ know will come up was to do the following:
 
   .. code-block :: bash
   
-    ./makenemo -j2 -n GYRE_testing -m gfortran_local |& tee compile_log.txt
+    ./makenemo -j2 -r GYRE_testing -m gfortran_local |& tee compile_log.txt
   
-  which should take a few minutes. 
+  (note the ``-r`` rather than ``-n`` flag here).
 
 .. warning ::
 
-  See if this untidy feature of ``makenemo`` has been fixed in the trunk?
+  See if this feature of ``makenemo`` has been modified in the trunk?
 
 Note the executable ``opa`` is now called ``nemo`` (so make sure you change
 those submission scripts on the relevant clusters if you use NEMO on them).
