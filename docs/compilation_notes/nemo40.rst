@@ -299,8 +299,8 @@ modules the configuration should have), whereas before just a ``-n`` flag would
 work by itself. 
 
 You could just compile as usual with ``makenemo`` (see :ref:`NEMO 3.6
-<sec:nemo36>` for syntax). The slightly untidy way to get what knowing what
-errors will come up was to:
+<sec:nemo36>` for syntax). The slightly untidy way to circumvent errors that I
+know will come up was to do the following:
 
 1. Open ``refs_cfg.txt``, copy the ``GYRE_PISCES OCE TOP`` line and paste it at the bottom, but then change the configuration name (``GYRE_PISCES`` to ``GYRE_testing`` in my case), save and close it;
 
