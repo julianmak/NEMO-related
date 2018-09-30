@@ -9,6 +9,11 @@ NEMO files
 Below are sample files or file generators you may need for using GEOMETRIC in
 NEMO.
 
+.. note ::
+  As of NEMO 4.0 at least v9925 onwards ``namtra_ldfeiv`` needs to be changed
+  to ``namtra_eiv``. Otherwise these could be copy and pasted in. Look into
+  ``namelist_ref`` to copy the other entries in if desired.
+
 ``namelist_cfg``
 ----------------
 
