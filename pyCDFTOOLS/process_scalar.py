@@ -15,7 +15,7 @@
 #
 
 import netCDF4
-import glob, sys, re
+import glob, sys
 from numpy import asarray, float64
 
 def scalar_to_txt(data_dir, query = False):
@@ -130,9 +130,9 @@ def scalar_to_txt(data_dir, query = False):
     
 #-------------------------------------------------------------------------------
 
-def txt_to_array(data_dir, key, query = False):
+def txt_to_array(data_dir, key, file_key, query = False):
   """
-  Given a data_dir, process all files with the "*scalar*.txt*" match
+  Given a data_dir, process all files with the "*FILE_KEY*.txt*" match
   and spit out some of its contents
 
   variable names and order hardcoded in here at the moment
@@ -140,6 +140,7 @@ def txt_to_array(data_dir, key, query = False):
   Inputs:
     data_dir = string for data directory
     key      = string for data to grab
+    file_key = string for file to grab
     
   Optional input:
     query    = True   to return the key names
@@ -150,7 +151,7 @@ def txt_to_array(data_dir, key, query = False):
   
   # grab the relevant filenames
   file_list = []
-  for file in glob.glob(data_dir + "*scalar*.txt"):
+  for file in glob.glob(data_dir + "*%s*.txt" % file_key):
     file_list.append(file)
     
   if not file_list:
@@ -200,7 +201,7 @@ def txt_to_array(data_dir, key, query = False):
   
 #-------------------------------------------------------------------------------
 
-def read_vol_transport(data_dir, key):
+def read_vol_transport(data_dir, key, match = None):
   """
   Given a data_dir, process all files with the "volume_transport*" match
   and spit out some of its contents
@@ -210,6 +211,8 @@ def read_vol_transport(data_dir, key):
   Inputs:
     data_dir = string for data directory
     key      = string for data to grab
+    match    = string (a number) to grab the specified entry under the same key
+                      if None, then grab the total
     
   Optional input:
     query    = True   to return the key names
@@ -235,17 +238,25 @@ def read_vol_transport(data_dir, key):
   for filename in file_list:
     with open(filename) as f:
       for line in f:
-        if re.search("\s" + key + "\s", line):    
-        #if key in line: # this needs to match case for case
+        if key in line: # this needs to match case for case
           data_dump.append(line)
+  
+  data_redump = []
+  if match is None:
+    for line in range(len(data_dump)):
+      if "total" in data_dump[line]:
+        data_redump.append(data_dump[line])
+  else:
+    for line in range(len(data_dump)):
+      if data_dump[line].split()[5] == match:
+          data_redump.append(data_dump[line])          
                   
   # define some lists to dump entries, then turn them into array
   time = []
   data_array = []
-  for i in range(len(data_dump)):
-    if "total" in data_dump[i]: # pick out only the total line
-      time.append(int(data_dump[i].split()[0][0:-4])) # strip out the last four digits
-      data_array.append(float(data_dump[i].split()[11]))
+  for i in range(len(data_redump)):
+    time.append(int(data_redump[i].split()[0][0:-4])) # strip out the last four digits
+    data_array.append(float(data_redump[i].split()[11]))
 
   time       = asarray(time)
   data_array = asarray(data_array)
