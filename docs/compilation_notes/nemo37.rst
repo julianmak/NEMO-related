@@ -8,6 +8,12 @@
 NEMO 3.7/4.0 + XIOS 2.0
 =======================
 
+Tested with
+
+* ``gcc4.9``, ``gcc5.4`` on a laptop (Ubuntu 16.04)
+* ``gcc4.9`` on a modular system (Ubuntu 14.04, Oxford AOPP)
+* ``gcc4.8`` on a Mac (El Capitan OSX 10.11)
+
 This is the version I first implemented GEOMETRIC in, which is a development
 version I guess (?) that eventually led to NEMO 4.0. The code structure largely
 follows NEMO 3.6 but the commands are slightly different. 
@@ -15,17 +21,14 @@ follows NEMO 3.6 but the commands are slightly different.
 If you get errors that are not documented here, see if :ref:`the XIOS1.0 NEMO3.6
 <sec:nemo36>` page contains the relevant errors.
 
-System settings: ``gcc-4.9``, Ubuntu 16.04, ``bashrc`` as configured in the page
-one level up.
-
 The assumption here is that the compiler is fixed and the packages (e.g.,
 NetCDF4 and a MPI bindings) are configured to be consistent with the compilers.
 See :ref:`here <sec:other-pack>` to check whether the binaries exist, where they
 are, and how they might be installed.
 
-The instructions below assumes ``gcc4.9`` compilers but works for ``gcc5.4``
-compilers too (with one extra flag required in XIOS compilation). I additionally
-defined some extra variables
+The instructions below assumes ``gcc4.9`` compilers but works for ``gcc4.8`` and
+``gcc5.4`` compilers too (with one extra flag required in XIOS compilation for
+the latter). I defined some extra variables on a Linux machine:
 
 .. code-block:: bash
 
@@ -36,9 +39,14 @@ defined some extra variables
   export LIBRARY_PATH=$BD/install/lib:$LIBRARY_PATH
   export LD_LIBRARY_PATH=$BD/install/lib:$LD_LIBRARY_PATH
   
-otherwise I have found the resulting libraries and binaries are not necessarily
+Otherwise I have found the resulting libraries and binaries are not necessarily
 linked to the right ones (I have a few versions of libraries at different places
-as a result of the testing recorded here).
+as a result of the testing recorded here). You shouldn't need to do the above if
+the packages are forced to look at the right place, though the above may help.
+
+On a Mac done through anaconda the above was not necessary. My understanding is
+that setting these variables might not actually do anything unless an option is
+specifically enabled in Xcode.
 
 XIOS 2.0 (svn v1322)
 --------------------
@@ -190,7 +198,7 @@ to contain the NEMO codes and binaries:
 
   mkdir NEMO
   cd NEMO
-  svn co http://forge.ipsl.jussieu.fr/nemo/svn/trunk@8666 nemo3.7-8666
+  svn co http://forge.ipsl.jussieu.fr/nemo/svn/NEMO/trunk@8666 nemo3.7-8666
   
 This checks out version 8666 (NEMO 3.7/4.0) and dumps it into a folder called
 ``nemo3.7-8666`` (change the target path to whatever you like). A similar
@@ -296,4 +304,42 @@ following `NEMO forge page
 for ``gyre`` in the `NEMO book
 <https://www.nemo-ocean.eu/wp-content/uploads/NEMO_book.pdf>`_).
 
+.. note ::
 
+  If your installation compiles but does not run with the following error
+  
+  .. code-block :: bash
+
+    dyld: Library not loaded: @rpath/libnetcdff.6.dylib
+    Referenced from: /paths/./nemo
+    Reason: no suitable image found.  Did find:
+    /usr/local/lib/libnetcdff.6.dylib: stat() failed with errno=13
+
+  then it is not finding the right libraries. These could be fixed by adding the
+  ``-Wl,-rpath,/fill me in/lib`` flag to the relevant flags bit in the ``*.fcm``
+  (or possibly in XIOS the ``path`` and/or ``env`` ) files (in this case it is
+  NetCDF as it calls the ``libnetcdff.6`` library) specifying exactly where the
+  libraries live. This can happen for example on a Mac or if the libraries are
+  installed not at the usual place.
+
+.. note ::
+
+  One infuriating problem I had specifically with a Mac (though it might be a
+  ``gcc4.8`` issue) is that the run does not get beyond the initialisation
+  stage. Going into ``ocean.output`` and searching for ``E R R O R`` shows that
+  it could complain about a misspelled namelist item (in my case it was in the
+  ``namberg`` namelist). If you go into ``output.namelist.dyn`` and look for the
+  offending namelist is that it might be reading in nonsense. This may happen if
+  the comment character ``!`` is right next to a variable, e.g.
+
+  ::
+  
+    ln_icebergs = .true.!this is a comment
+    
+  Fix this by adding a white space, i.e.
+  
+  ::
+  
+    ln_icebergs = .true. !this is a comment
+    
+  which should fix it...

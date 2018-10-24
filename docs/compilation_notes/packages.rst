@@ -12,34 +12,151 @@ Tested with
 
 * ``gcc4.9``, ``gcc5.4`` on a laptop (Ubuntu 16.04)
 * ``gcc4.9`` on a modular system (Ubuntu 14.04, Oxford AOPP)
+* ``gcc4.8`` on a Mac (El Capitan OSX 10.11)
 
 The following packages are needed for NEMO and XIOS and they may need to be
-installed or configured accordingly. If you want a script to do all of the
-following in one go, then please scroll right to the bottom of this page.
+installed or configured accordingly. I don't have a windows machine handy (and I
+don't really want to try it there either) so for that I would recommend doing
+the following through virtualbox or something analogous (which might be another
+way to do it on a Mac); I am guessing `cygwin` and the new Windows 10 terminals
+might be a possibility.
 
 .. note::
 
-  The main issue I have been founding is trying to get the compilations to call
-  the correct versions of (static and/or dynamic) libraries that has been
-  compiled. If you can get a system manager to install the packages
-  (particularly HDF5 and NetCDF4) it would save a lot of time, unless the
-  compiled libraries itself are clashing...
+  I would suggest trying the following in reverse order of effort required:
+
+  1. Get someone who knows what they are doing to do it for you! Compiling the following from scratch is not the most interesting activity and is actually quite fiddly (especially the HDF5 and NetCDF4 stuff)...if you don't have access to people who can do that, then try
+  2. Doing it through anaconda. There you are somewhat restricted to a certain set of compilers (gcc 4.8) but anaconda sorts out the dependencies for you. The only thing then you need to do is to force XIOS and NEMO to use the libraries within the anaconda installation. Failing that...
+  3. Do it from scratch. I'm sorry and good luck; see below for some notes to possibly ease your pain.
   
-  As of 21 Aug 2018, the following remains on the agenda:
+  As of 24 Oct 2018, the following remains on the agenda:
   
   * intel compilers
-  * gcc on Mac OSX
   * reproducing sample compatibility errors
 
-Preliminaries
--------------
+Anaconda
+--------
 
-The way I went about it was to first choose a set of compilers and use the same
-set of compilers to install the dependencies, primarily to avoid errors relating
-to compatibility of packages. For example, ``gcc4.9`` was downloaded through
-``sudo apt-get install gcc4.9``, or loaded through a network computer through
-something like a ``module load`` command. You may have to look it up on the
-internet if you don't have either of these.
+`Anaconda <https://www.anaconda.com/download/>`_ is a framework mostly for
+downloading Python packages, with the added advantage that it resolves the
+package dependencies for you (cf. ``apt``, ``yum`` on a Linux machine or
+``port`` on a Mac if you have MacPorts). See the `official conda manual
+<https://conda.io/docs/index.html>`_ or some of :ref:`my own notes <sec:python>`
+on some things to do with installing and managing conda. I used the full
+anaconda with Python 3.6 but you could use miniconda or with other pythons
+probably.
+
+First I created an environment so all the changes only apply in that
+environment:
+
+.. code-block:: bash
+
+  conda create -n nemo python=3.6
+  
+Accept to install the basic packages for the environment. Then activate the
+``nemo`` environment with
+
+.. code-block:: bash
+
+  >> julian@psyduck:~/
+  source activate nemo
+  >> (nemo) julian@psyduck:~/
+  
+Now if you have compilers you want to use already then you can skip the compiler
+installation. On the Mac I was dealing with there was no ``gcc`` or a Fortran
+compiler and I had problems with ``clang``, so I did the following to get a set
+of ``gcc`` compilers:
+
+.. code-block:: bash
+
+  conda install gcc
+  conda install gfortran_osx-64
+  
+The second line you should change to ``gfortran_linux-64`` if on a Linux
+machine. The command will add some compiler flags that is unset when exiting
+from the environment. Check that the compilers are the now default compilers by
+doing ``gcc --version`` (which should probably give 4.8) and ``which gcc``
+(which should point to the anaconda folder). If not, do something like ``echo
+CC`` and ``export CC=/folder/bin`` to force it to point to the right folder
+(also do it for ``FC`` and ``CXX``, and maybe put it in the ``$PATH`` variable;
+see below).
+
+.. note::
+
+  One thing I found to be an issue is that while ``gfortran`` can compile a
+  sample program through ``gfortran hello.f90 -o hi`` with ``hello.f90`` being
+  
+  .. code-block:: fortran
+  
+    program hello
+      print *, "hi mum"
+    end program hello
+    
+  Executing through ``./hi`` could throw a library complaint:
+  
+  .. code-block:: bash
+  
+    dyld: Library not loaded: @rpath/libgfortran.3.dylib
+    Referenced from: 
+    Reason: no suitable image found.  Did find:
+	  /usr/local/lib/libnetcdff.3.dylib: stat() failed with errno=13
+	  
+  So the problem here is that the computer is looking for the library at the
+  wrong place. To force the computer to look at the right place, try
+	
+  .. code-block:: bash
+  
+    export FCFLAGS=-Wl,-rpath,${CONDA_PREFIX}/lib
+	  
+  where ``${CONDA_PREFIX}`` should have been defined by anaconda.
+
+If you already have the MPI capabilities bound to the compilers you will use
+then you can skip the following. To make life easier it is advisable to install
+either MPICH (Linux?) or OpenMPI (Mac?). You could try this by
+
+.. code-block:: bash
+
+  conda install -c conda-forge mpich
+  conda install -c conda-forge openmpi
+
+and check whether ``which mpicc`` and in particular ``which mpif90``, which
+should be pointed to the ``gcc`` compilers. I had a similar problem with
+``gfortran`` not being bound properly, which could be fixed with setting
+``FCFLAGS``, or to compile it from scratch (see below for the way to do it for
+MPICH, which also works for OpenMPI with suitable changes in the hyperlink
+address; do a search for this in Google).
+
+To get NetCDF4 and its dependencies I did
+
+.. code-block:: bash
+
+  conda install netcd4
+  conda install -c conda-forge netcdf-fortran
+  
+Do ``which nc-config`` and ``nc-config --all`` to see which paths are being
+pointed to. Again, you may need to add the ``FCFLAGS`` detailed above to make
+sure it is pointing to the right libraries. Take note of the path where the
+libraries and header files live and put those into the XIOS and NEMO files and
+that should be it!
+
+Compiling it yourself
+---------------------
+
+(Good luck!)
+
+The following has been tried on a Linux machine. I had some problems on a Mac
+with ``Clang`` that I don't know how to fix without ``sudo`` access but it is
+probably fixable; I have not tried installing things with ``port`` through
+MacPorts partly because it requires Xcode to be installed.
+
+If you want a script to do all of the following on a Linux machine in one go,
+then please scroll right to the bottom of this page. The way I went about it was
+to first choose a set of compilers and use the same set of compilers to install
+the dependencies, primarily to avoid errors relating to compatibility of
+packages. For example, ``gcc4.9`` was downloaded through ``sudo apt-get install
+gcc4.9``, or loaded through a network computer through something like a ``module
+load`` command. You may have to look it up on the internet if you don't have
+either of these.
 
 The order I did them in are:
 
@@ -162,8 +279,8 @@ the binaries, libraries and header files to include for later installations.
   change this to change the installation folder.
   
 
-zlib and DF5
-------------
+zlib and HDF5
+-------------
 
 Check whether HDF5 exists first (may still need to be installed again for
 compatibility reasons). ``h5copy`` is the command that should exist if HDF5 is

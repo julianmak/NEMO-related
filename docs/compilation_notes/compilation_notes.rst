@@ -16,14 +16,14 @@ authoritative version.
 While it is fairly straightforward on a supported cluster/supercomputer (e.g.
 first try following `NOCL ARCHER guide
 <https://nemo-nocl.readthedocs.io/en/latest/work_env/archer.html>`_) it can be a
-bit temperamental on a local machine a range of compatibility issues between
-compilers and packages can surface. The following notes are what I did to get
-XIOS and NEMO compiling, and will display commands with ``gcc4.9`` compilers
-(which is my default for other reasons). Extra things that need to be modified
-for other compilers I have tested will be given accordingly (see the top of the
-individual pages as to which compilers I have tested the notes with).
+bit temperamental on a local machine to do with compiler compatibilities. The
+following notes are what I did to get XIOS and NEMO compiling and running, and
+will display commands with ``gcc4.9`` compilers (which is my default for other
+reasons). Extra things that need to be modified for other compilers I have
+tested will be given accordingly (see the top of the individual pages as to
+which compilers I have tested the notes with).
 
-My ``~/.bashrc`` has the following added:
+I added the following to my ``~/.bashrc``:
 
 .. code-block:: bash
 

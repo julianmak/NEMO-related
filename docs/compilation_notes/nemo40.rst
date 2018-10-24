@@ -8,6 +8,12 @@
 NEMO 4.0 (beta) + XIOS 2.5
 ==========================
 
+Tested with
+
+* ``gcc4.9``, ``gcc5.4`` on a laptop (Ubuntu 16.04)
+* ``gcc4.9`` on a modular system (Ubuntu 14.04, Oxford AOPP)
+* ``gcc4.8`` on a Mac (El Capitan OSX 10.11)
+
 The code structure in NEMO 4.0 and the use of some commands are slightly
 different (at least in v9925) and will be documented below (please see the
 `official NEMO annoucement
@@ -15,17 +21,14 @@ different (at least in v9925) and will be documented below (please see the
 If you get errors that are not documented here, see if :ref:`the XIOS1.0 NEMO3.6
 <sec:nemo36>` page contains the relevant errors.
 
-System settings: ``gcc-4.9``, Ubuntu 16.04, ``bashrc`` as configured in the page
-one level up.
-
 The assumption here is that the compiler is fixed and the packages (e.g.,
 NetCDF4 and a MPI bindings) are configured to be consistent with the compilers.
 See :ref:`here <sec:other-pack>` to check whether the binaries exist, where they
 are, and how they might be installed.
 
-The instructions below assumes ``gcc4.9`` compilers but works for ``gcc5.4``
-compilers too (with one extra flag required in XIOS compilation). I additionally
-defined some extra variables
+The instructions below assumes ``gcc4.9`` compilers but works for ``gcc4.8`` and
+``gcc5.4`` compilers too (with one extra flag required in XIOS compilation for
+the latter). I defined some extra variables on a Linux machine:
 
 .. code-block:: bash
 
@@ -36,9 +39,14 @@ defined some extra variables
   export LIBRARY_PATH=$BD/install/lib:$LIBRARY_PATH
   export LD_LIBRARY_PATH=$BD/install/lib:$LD_LIBRARY_PATH
   
-otherwise I have found the resulting libraries and binaries are not necessarily
+Otherwise I have found the resulting libraries and binaries are not necessarily
 linked to the right ones (I have a few versions of libraries at different places
-as a result of the testing recorded here).
+as a result of the testing recorded here). You shouldn't need to do the above if
+the packages are forced to look at the right place, though the above may help.
+
+On a Mac done through anaconda the above was not necessary. My understanding is
+that setting these variables might not actually do anything unless an option is
+specifically enabled in Xcode.
 
 XIOS 2.5 (svn v1566)
 --------------------
@@ -213,7 +221,7 @@ to contain the NEMO codes and binaries:
 
   mkdir NEMO
   cd NEMO
-  svn co http://forge.ipsl.jussieu.fr/nemo/svn/trunk@9925 nemo4.0-9925
+  svn co http://forge.ipsl.jussieu.fr/nemo/svn/NEMO/trunk@9925 nemo4.0-9925
   
 This checks out version 9925 (NEMO 4.0 beta) and dumps it into a folder called
 ``nemo4.0-9925`` (change the target path to whatever you like). A similar
@@ -313,11 +321,11 @@ know will come up was to do the following:
     
 3. I opened ``/GYRE_testing/cpp_GYRE_testing.fcm`` and replaced ``key_top`` with ``key_nosignedzero`` (does not compile TOP for speed speeds, and make sure zeros are not signed), save it;
 
-4. Compile with
+4. Compile with (because ``makenmemo`` is now one level up)
 
   .. code-block :: bash
   
-    ./makenemo -j2 -r GYRE_testing -m gfortran_local |& tee compile_log.txt
+    ../makenemo -j2 -r GYRE_testing -m gfortran_local |& tee compile_log.txt
   
   (note the ``-r`` rather than ``-n`` flag here).
 
@@ -338,3 +346,43 @@ Check that it does run with the following:
 Note that what used to be ``solver.stat`` is now called ``run.stat``, and there
 is an extra ``run.stat.nc`` for whatever reason. The ``ocean.output`` file is
 still the same.
+
+.. note ::
+
+  If your installation compiles but does not run with the following error
+  
+  .. code-block :: bash
+
+    dyld: Library not loaded: @rpath/libnetcdff.6.dylib
+    Referenced from: /paths/./nemo
+    Reason: no suitable image found.  Did find:
+    /usr/local/lib/libnetcdff.6.dylib: stat() failed with errno=13
+
+  then it is not finding the right libraries. These could be fixed by adding the
+  ``-Wl,-rpath,/fill me in/lib`` flag to the relevant flags bit in the ``*.fcm``
+  (or possibly in XIOS the ``path`` and/or ``env`` ) files (in this case it is
+  NetCDF as it calls the ``libnetcdff.6`` library) specifying exactly where the
+  libraries live. This can happen for example on a Mac or if the libraries are
+  installed not at the usual place.
+
+.. note ::
+
+  One infuriating problem I had specifically with a Mac (though it might be a
+  ``gcc4.8`` issue) is that the run does not get beyond the initialisation
+  stage. Going into ``ocean.output`` and searching for ``E R R O R`` shows that
+  it could complain about a misspelled namelist item (in my case it was in the
+  ``namberg`` namelist). If you go into ``output.namelist.dyn`` and look for the
+  offending namelist is that it might be reading in nonsense. This may happen if
+  the comment character ``!`` is right next to a variable, e.g.
+
+  ::
+  
+    ln_icebergs = .true.!this is a comment
+    
+  Fix this by adding a white space, i.e.
+  
+  ::
+  
+    ln_icebergs = .true. !this is a comment
+    
+  which should fix it...

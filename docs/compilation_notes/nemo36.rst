@@ -12,6 +12,7 @@ Tested with
 
 * ``gcc4.9``, ``gcc5.4`` on a laptop (Ubuntu 16.04)
 * ``gcc4.9`` on a modular system (Ubuntu 14.04, Oxford AOPP)
+* ``gcc4.8`` on a Mac (El Capitan OSX 10.11)
 
 The assumption here is that the compiler is fixed and the packages (e.g.,
 NetCDF4 and a MPI bindings) are configured to be consistent with the compilers.
@@ -20,9 +21,9 @@ are, and how they might be installed. All the ``#CHANGE ME`` highlighted below
 needs be modified to point to the appropriate paths or binaries (links for
 binaries are ok). 
 
-The instructions below assumes ``gcc4.9`` compilers but works for ``gcc5.4``
-compilers too (with one extra flag required in XIOS compilation). I additionally
-defined some extra variables
+The instructions below assumes ``gcc4.9`` compilers but works for ``gcc4.8`` and
+``gcc5.4`` compilers too (with one extra flag required in XIOS compilation for
+the latter). I defined some extra variables on a Linux machine:
 
 .. code-block:: bash
 
@@ -33,9 +34,14 @@ defined some extra variables
   export LIBRARY_PATH=$BD/install/lib:$LIBRARY_PATH
   export LD_LIBRARY_PATH=$BD/install/lib:$LD_LIBRARY_PATH
   
-otherwise I have found the resulting libraries and binaries are not necessarily
+Otherwise I have found the resulting libraries and binaries are not necessarily
 linked to the right ones (I have a few versions of libraries at different places
-as a result of the testing recorded here).
+as a result of the testing recorded here). You shouldn't need to do the above if
+the packages are forced to look at the right place, though the above may help.
+
+On a Mac done through anaconda the above was not necessary. My understanding is
+that setting these variables might not actually do anything unless an option is
+specifically enabled in Xcode.
 
 XIOS 1.0 (svn v703)
 -------------------
@@ -230,7 +236,7 @@ to contain the NEMO codes and binaries:
 
   mkdir NEMO
   cd NEMO
-  svn co http://forge.ipsl.jussieu.fr/nemo/svn/trunk@6800 nemo3.6-6800
+  svn co http://forge.ipsl.jussieu.fr/nemo/svn/NEMO/trunk@6800 nemo3.6-6800
   
 This checks out version 6800 (NEMO 3.6) and dumps it into a folder called
 ``nemo3.6-6800`` (change the target path to whatever you like). A similar
@@ -357,4 +363,43 @@ for ``gyre`` in the `NEMO book
   searching for ``E R R O R`` shows that ``key_nosignedzero`` needed to be added
   to ``/GYRE_testing/cpp_GYRE_testing.fcm``. Rebuilding with the key then works
   fine.
+  
+.. note ::
 
+  If your installation compiles but does not run with the following error
+  
+  .. code-block :: bash
+
+    dyld: Library not loaded: @rpath/libnetcdff.6.dylib
+    Referenced from: /paths/./nemo
+    Reason: no suitable image found.  Did find:
+    /usr/local/lib/libnetcdff.6.dylib: stat() failed with errno=13
+
+  then it is not finding the right libraries. These could be fixed by adding the
+  ``-Wl,-rpath,/fill me in/lib`` flag to the relevant flags bit in the ``*.fcm``
+  (or possibly in XIOS the ``path`` and/or ``env`` ) files (in this case it is
+  NetCDF as it calls the ``libnetcdff.6`` library) specifying exactly where the
+  libraries live. This can happen for example on a Mac or if the libraries are
+  installed not at the usual place.
+  
+.. note ::
+
+  One infuriating problem I had specifically with a Mac (though it might be a
+  ``gcc4.8`` issue) is that the run does not get beyond the initialisation
+  stage. Going into ``ocean.output`` and searching for ``E R R O R`` shows that
+  it could complain about a misspelled namelist item (in my case it was in the
+  ``namberg`` namelist). If you go into ``output.namelist.dyn`` and look for the
+  offending namelist is that it might be reading in nonsense. This may happen if
+  the comment character ``!`` is right next to a variable, e.g.
+
+  ::
+  
+    ln_icebergs = .true.!this is a comment
+    
+  Fix this by adding a white space, i.e.
+  
+  ::
+  
+    ln_icebergs = .true. !this is a comment
+    
+  which should fix it...
