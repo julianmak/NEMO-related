@@ -103,12 +103,12 @@ if args.lntr:
   sys.exit("neutral density option not implemented yet, stopping...")
 else:
   # generate bins from presets (available for 0, 1000, 2000m depth), or define it in a dictionary as
-  #bins = {"pref"   : 2000,
-  #        "nbins"  : 316,
-  #        "sigmin" : 30.0,
-  #        "sigstp" : 0.025}
+  bins = {"pref"   : 2000,
+          "nbins"  : 316,
+          "sigmin" : 30.0,
+          "sigstp" : 0.025}
 
-  bins = sigma_bins(2000)
+  #bins = sigma_bins(2000)
   
   print(" ")
   print("using potential density referenced to %g m" % bins["pref"])
@@ -116,7 +116,7 @@ else:
     % (bins["nbins"], bins["sigmin"], bins["sigmin"] + (bins["nbins"] - 1) * bins["sigstp"])
        )
   print(" ")
-       
+
 #--------------------------------------------------------
 # cycle through the file lists and compile the moc
 print("%g files found, cycling through them..." % len(file_list))
@@ -141,7 +141,7 @@ print(" ")
 print("returning final time-averaged field")
 
 #--------------------------------------------------------
-# saving commands
+# write the file
 
 latV_mesh = np.zeros(depi[0, :, :].shape)
 for j in range(latV_mesh.shape[0]):
