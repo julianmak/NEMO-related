@@ -69,9 +69,9 @@ def cdfpsi(data_dir, u_file, u_var, v_file, v_var, **kwargs):
     cf_vfil = Dataset(data_dir + v_file)
     if opt_dic["lprint"]:
       print(cf_vfil)
-    npiglo  = cf_vfil.dimensions["x"].size
-    npjglo  = cf_vfil.dimensions["y"].size
-    npk     = cf_vfil.dimensions["depthv"].size
+    npiglo  = len(cf_vfil.dimensions["x"])
+    npjglo  = len(cf_vfil.dimensions["y"])
+    npk     = len(cf_vfil.dimensions["depthv"])
     zv      = cf_vfil.variables[v_var][opt_dic["kt"], :, :, :]
     if opt_dic["lg_vvl"]:
       e3v     = cf_vfil.varaibles["e3v"][opt_dic["kt"], :, :, :]
@@ -88,9 +88,9 @@ def cdfpsi(data_dir, u_file, u_var, v_file, v_var, **kwargs):
     cf_ufil = Dataset(data_dir + u_file)
     if opt_dic["lprint"]:
       print(cf_ufil)
-    npiglo  = cf_ufil.dimensions["x"].size
-    npjglo  = cf_ufil.dimensions["y"].size
-    npk     = cf_ufil.dimensions["depthu"].size
+    npiglo  = len(cf_ufil.dimensions["x"])
+    npjglo  = len(cf_ufil.dimensions["y"])
+    npk     = len(cf_ufil.dimensions["depthu"])
     zu      = cf_ufil.variables[u_var][opt_dic["kt"], :, :, :]
     if opt_dic["lg_vvl"]:
       e3u     = cf_ufil.variables["e3u"][opt_dic["kt"], :, :, :]

@@ -80,9 +80,9 @@ def cdfmoc(data_dir, v_file, v_var, **kwargs):
   cf_vfil = Dataset(data_dir + v_file)
   if opt_dic["lprint"]:
     print(cf_vfil)
-  npiglo  = cf_vfil.dimensions["x"].size
-  npjglo  = cf_vfil.dimensions["y"].size
-  npk     = cf_vfil.dimensions["depthv"].size
+  npiglo  = len(cf_vfil.dimensions["x"])
+  npjglo  = len(cf_vfil.dimensions["y"])
+  npk     = len(cf_vfil.dimensions["depthv"])
   zv      = cf_vfil.variables[v_var][opt_dic["kt"], :, :, :]
   if opt_dic["lg_vvl"]:
     e3v     = cf_vfil.variables["e3v"][opt_dic["kt"], :, :, :]

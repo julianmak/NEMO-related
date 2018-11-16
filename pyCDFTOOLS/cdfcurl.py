@@ -61,8 +61,8 @@ def cdfcurl(data_dir, u_file, u_var, v_file, v_var, **kwargs):
 
   # open some files and pull variables out
   cn_mask = Dataset(data_dir + "mesh_mask.nc")
-  npiglo  = cn_mask.dimensions["x"].size
-  npjglo  = cn_mask.dimensions["y"].size
+  npiglo  = len(cn_mask.dimensions["x"])
+  npjglo  = len(cn_mask.dimensions["y"])
   glamf   = cn_mask.variables["glamf"][0, :, :]
   gphif   = cn_mask.variables["gphif"][0, :, :]
   e1u     = cn_mask.variables["e1u"][0, :, :]
