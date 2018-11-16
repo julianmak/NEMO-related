@@ -194,14 +194,20 @@ def cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs):
     
     # sum up over the density classes
     # routine takes dmoc as an input and adds to it, so no += required
-    dmoc = dmoc_loop(dmoc, zv[jk, :, :], zarea[jk, :, :], ibin, 
-                     nbins, ij1, ij2, npjglo, npiglo, ibmask)
+    # manually split out the JIT loops
+    for jj in range(ij1, ij2):
+      dmoc_tmp = zeros((nbins, npiglo))
+      dmoc = dmoc_loop(dmoc, dmoc_tmp, jj, zv[jk, :, :], zarea[jk, :, :], 
+                       ibin, nbins, npiglo, ibmask)
                      
     # lisodep routines
     if opt_dic["lisodep"]:
-      depi, wdep = isodep_loop(depi, wdep, zarea[jk, :, :], ibin, 
-                               gdep[jk], tmask[jk, :, :],
-                               nbins, ij1, ij2, npjglo, npiglo, ibmask)
+      for jj in range(ij1, ij2):
+        depi_tmp = zeros((nbins, npiglo))
+        wdep_tmp = zeros((nbins, npiglo))
+        depi, wdep = isodep_loop(depi, wdep, depi_tmp, wdep_tmp, jj,
+                                 zarea[jk, :, :], gdep[jk], tmask[jk, :, :],
+                                 ibin, nbins, npiglo, ibmask)
 
   # Integrate across the bins from high to low density
   dmoc[:, nbins - 1, :] /= 1.0e6
@@ -215,52 +221,46 @@ def cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs):
   
 #-------------------------------------------------------------------------------
 @jit(nopython = True)
-def dmoc_loop(dmoc, zv, zarea, ibin, 
-              nbins, ij1, ij2, npjglo, npiglo, ibmask):
+def dmoc_loop(dmoc, dmoc_tmp, jj, zv, zarea, ibin, nbins, npiglo, ibmask):
   
   # Do the binning and convert k into sigma
-  for jj in range(ij1, ij2):
-    dmoc_tmp = zeros((nbins, npiglo))
-    for ji in range(1, npiglo - 1):
-      # cycle through the indices and bin according to density classes
-      ib = ibin[jj, ji] - 1 # python indexing
-      
-      dmoc_tmp[ib, ji] -= zv[jj, ji] * zarea[jj, ji]
-      
-    # integrate 'zonally' (along i-coordingate)
-    # add to dmoc
-    for jbasin in range(ibmask.shape[0]):
-      for jbin in range(0, nbins):
-        for ji in range(1, npiglo - 1):
-          if ibmask[jbasin, jj, ji]: # only do something where it needs to
-            dmoc[jbasin, jbin, jj] += dmoc_tmp[jbin, ji]
+  for ji in range(1, npiglo - 1):
+    # cycle through the indices and bin according to density classes
+    ib = ibin[jj, ji] - 1 # python indexing
+    
+    dmoc_tmp[ib, ji] -= zv[jj, ji] * zarea[jj, ji]
+    
+  # integrate 'zonally' (along i-coordingate)
+  # add to dmoc
+  for jbasin in range(ibmask.shape[0]):
+    for jbin in range(0, nbins):
+      for ji in range(1, npiglo - 1):
+        if ibmask[jbasin, jj, ji]: # only do something where it needs to
+          dmoc[jbasin, jbin, jj] += dmoc_tmp[jbin, ji]
           
   return dmoc
   
 #-------------------------------------------------------------------------------
 @jit(nopython = True)
-def isodep_loop(depi, wdep, zarea, ibin, gdep, itmask,
-                nbins, ij1, ij2, npjglo, npiglo, ibmask):
+def isodep_loop(depi, wdep, depi_tmp, wdep_tmp, jj, zarea, gdep, itmask,
+                ibin, nbins, npiglo, ibmask):
   
   # Do the binning and convert k into sigma
-  for jj in range(ij1, ij2):
-    depi_tmp = zeros((nbins, npiglo))
-    wdep_tmp = zeros((nbins, npiglo))
-    for ji in range(1, npiglo - 1):
-      # cycle through the indices and bin according to density classes
-      ib = ibin[jj, ji] - 1 # python indexing
-      
-      depi_tmp[ib, ji] += gdep * zarea[jj, ji] * itmask[jj, ji]
-      wdep_tmp[ib, ji] +=        zarea[jj, ji] * itmask[jj, ji]
-      
-    # integrate 'zonally' (along i-coordingate)
-    # add to isodep variables
-    for jbasin in range(ibmask.shape[0]):
-      for jbin in range(0, nbins):
-        for ji in range(1, npiglo - 1):
-          if ibmask[jbasin, jj, ji]:
-            depi[jbasin, jbin, jj] += depi_tmp[jbin, ji]
-            wdep[jbasin, jbin, jj] += wdep_tmp[jbin, ji]
+  for ji in range(1, npiglo - 1):
+    # cycle through the indices and bin according to density classes
+    ib = ibin[jj, ji] - 1 # python indexing
+    
+    depi_tmp[ib, ji] += gdep * zarea[jj, ji] * itmask[jj, ji]
+    wdep_tmp[ib, ji] +=        zarea[jj, ji] * itmask[jj, ji]
+    
+  # integrate 'zonally' (along i-coordingate)
+  # add to isodep variables
+  for jbasin in range(ibmask.shape[0]):
+    for jbin in range(0, nbins):
+      for ji in range(1, npiglo - 1):
+        if ibmask[jbasin, jj, ji]:
+          depi[jbasin, jbin, jj] += depi_tmp[jbin, ji]
+          wdep[jbasin, jbin, jj] += wdep_tmp[jbin, ji]
           
   return (depi, wdep)
   
@@ -286,13 +286,12 @@ def cdfmocsig_tave(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs
   # cycle through every single time entry
   for kt in range(nt):
     kwargs["kt"] = kt
+    print("working at frame %g / %g" % (kt + 1, nt ))
     if kt == 0:
-      print("working at frame %g..." % (kt + 1), end = "")
       sigma, depi_temp, rdumlat, dmoc_temp, opt_dic = cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs)
       dmoc = dmoc_temp / nt
       depi = depi_temp / nt
     else:
-      print("%g..." % (kt + 1), end = "")
       _, depi_temp, _, dmoc_temp, _ = cdfmocsig(data_dir, v_file, v_var, t_file, t_var, s_var, bins, **kwargs)
       dmoc += dmoc_temp / nt
       depi += depi_temp / nt
