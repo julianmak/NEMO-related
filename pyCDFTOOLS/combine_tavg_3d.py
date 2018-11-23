@@ -26,8 +26,6 @@ parser.add_argument("file",     type = str,
                     help = "specify string in file that matches the data (e.g. \"*MOC_V*\", note the quote marks)")
 parser.add_argument("var",      type = str, 
                     help = "specify variable name in file (e.g. votemper)")
-parser.add_argument("depth_var",    type = str, 
-                    help = "specify depth variable name in file (e.g. usually deptht/w/u/v)")
 parser.add_argument("file_out", type = str, 
                     help = "specify output name (e.g. kgm_tave.nc)")
 
@@ -72,10 +70,21 @@ for i in range(len(file_list)):
     units     = copy.deepcopy(var.units)
     nav_lat   = data.variables["nav_lat"][:, :]
     nav_lon   = data.variables["nav_lon"][:, :]
-    depth     = data.variables[args.depth_var][:]
-    array  = var[0, :, :, :] / len(file_list)
+    t         = data.variables["time_centered"][:]
+    for kt in range(len(t)):
+      print("processing %s at index %i / %i..." 
+        % (file_list[i].replace(args.data_dir, ""), kt + 1, len(t))
+           )
+      if kt == 0:
+        array  = var[kt, :, :, :] / (len(file_list) * len(t))
+      else:
+        array += var[kt, :, :, :] / (len(file_list) * len(t))
   else:
-    array += var[0, :, :, :] / len(file_list)
+    for kt in range(len(t)):
+      print("processing %s at index %i / %i..."
+        % (file_list[i].replace(args.data_dir, ""), kt + 1, len(t))
+           )
+      array += var[kt, :, :, :] / (len(file_list) * len(t))
 
   data.close()
         
@@ -92,7 +101,6 @@ ncfile.title = "combined variable %s" % args.var
 
 ncfile.createDimension("x", nav_lat.shape[1])
 ncfile.createDimension("y", nav_lat.shape[0])
-ncfile.createDimension("z", depth.shape[0])
 ncfile.createDimension("time", len(np.asarray([0.0])))
 
 # first argument is name of variable, 
@@ -109,12 +117,7 @@ lat_netcdf[:] = nav_lat
 lat_netcdf.units = "deg"
 lat_netcdf.long_name = "y"
 
-dep_netcdf = ncfile.createVariable("depth", np.dtype("float32").char, ("z"))
-dep_netcdf[:] = depth
-dep_netcdf.units = "m"
-dep_netcdf.long_name = "z"
-
-var_netcdf = ncfile.createVariable(args.var, np.dtype("float32").char, ("time", "z", "y", "x"))
+var_netcdf = ncfile.createVariable(args.var, np.dtype("float32").char, ("time", "y", "x"))
 var_netcdf[:] = array
 var_netcdf.units = units
 var_netcdf.long_name = long_name

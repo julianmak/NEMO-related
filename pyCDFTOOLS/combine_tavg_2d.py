@@ -70,9 +70,21 @@ for i in range(len(file_list)):
     units     = copy.deepcopy(var.units)
     nav_lat   = data.variables["nav_lat"][:, :]
     nav_lon   = data.variables["nav_lon"][:, :]
-    array  = var[0, :, :] / len(file_list)
+    t         = data.variables["time_centered"][:]
+    for kt in range(len(t)):
+      print("processing %s at index %i / %i..." 
+        % (file_list[i].replace(args.data_dir, ""), kt + 1, len(t))
+           )
+      if kt == 0:
+        array  = var[kt, :, :] / (len(file_list) * len(t))
+      else:
+        array += var[kt, :, :] / (len(file_list) * len(t))
   else:
-    array += var[0, :, :] / len(file_list)
+    for kt in range(len(t)):
+      print("processing %s at index %i / %i..."
+        % (file_list[i].replace(args.data_dir, ""), kt + 1, len(t))
+           )
+      array += var[kt, :, :] / (len(file_list) * len(t))
 
   data.close()
         
