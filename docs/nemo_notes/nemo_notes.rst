@@ -8,6 +8,9 @@ Other NEMO notes
 
 Here you will find some of my notes relating to NEMO.
 
+If you are interested in building a model, see how I went about doing it in the
+:ref:`model building <sec:build_model>` subsection.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
@@ -16,4 +19,5 @@ Here you will find some of my notes relating to NEMO.
    nemo_packages.rst
    gyre_config.rst
    orca_config.rst
+   unagi_config.rst
    pyCDFTOOLS.rst

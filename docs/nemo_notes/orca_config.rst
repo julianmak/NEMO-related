@@ -9,10 +9,10 @@ Global configuration (ORCA grid)
 Brief description
 -----------------
 
-Usage
------
+How to get the model running
+----------------------------
 
-Visualisation scripts
----------------------
+Custom analysis scripts
+-----------------------
 
 

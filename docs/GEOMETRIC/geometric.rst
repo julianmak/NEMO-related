@@ -2,6 +2,8 @@
    sphinx-quickstart on Wed Jul  4 10:59:03 2018.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
+   
+.. role:: strike
 
 GEOMETRIC outline
 =================
@@ -84,9 +86,15 @@ the depth-mean flow as well as a contribution associated with the westward
 propagation of eddies at the long Rossby phase speed (motivated by e.g.
 :cite:`Chelton-et-al11` and :cite:`KlockerMarshall14`). The advection is by the
 barotropic mean flow already computed in NEMO, with a first order upwind scheme.
-The Rossby wave contribution requires computing for eigenvalues and uses two
-subroutines (``eke_rossby`` and ``eke_thomas``). See :ref:`here <sec:nemo-adv>`
-for usage and implementation details.
+The Rossby wave contribution requires computing for the eigenvalue associated
+with the first baroclinic mode and uses :strike:`two subroutines (eke_rossby and
+eke_thomas)` the WKB expression given in :cite:`Chelton-et-al98` (their equation
+2.2). See :ref:`here <sec:nemo-adv>` for usage and implementation details.
+
+.. note ::
+  As of Feb 2019 the removal of the routines to solve the tri-diagonal
+  eigenvalue problem means the ``nn_wav_cal`` variable in ``namelist_cfg`` has
+  been removed.
 
 Source
 ------
@@ -95,11 +103,11 @@ The source of mesoscale eddy energy here is only from the slumping of neutral
 surfaces through the eddy induced velocity as parameterised by the GM scheme
 (note that it is positive-definite). These are straight-forwardly computed as is
 (rather than using the quasi-Stokes streamfunction) using the already limited
-slopes compued in NEMO. See :ref:`here <sec:nemo-sou>` for implementation
+slopes computed in NEMO. See :ref:`here <sec:nemo-sou>` for implementation
 details.
 
-Damping
--------
+Dissipation
+-----------
 
 The damping of eddy energy is linearly damped and the coefficient is specified
 in ``namelist_cfg`` as a time-scale in *days* (which is subsequently converted
@@ -130,4 +138,4 @@ treatment, :code:`namelist_cfg` file), please see the following pages.
    assorted_files.rst
 
 .. bibliography:: ../refs.bib
-   :cited:
+   :filter: docname in docnames

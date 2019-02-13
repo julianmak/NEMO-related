@@ -62,9 +62,12 @@ NEMO.
      !                                !   = 88  only advection by depth-averaged flow
      !                                !   = 99  only Laplacian diffusion
      ln_adv_wav     =  .true.   ! include advection at long Rossby speed
-        nn_wav_cal  =  60             ! number of time steps between eigenvalue calculation
   /
-
+  
+.. note ::
+  As of Feb 2019 the removal of the routines to solve the tri-diagonal
+  eigenvalue problem means the ``nn_wav_cal`` variable in ``namelist_cfg`` has
+  been removed.
 
 ``field_def_nemo-opa.xml``
 --------------------------

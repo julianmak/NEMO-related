@@ -6,15 +6,17 @@
 Rotated Gyre model
 ==================
 
-Brief description
------------------
+Brief overview and sample outputs
+---------------------------------
 
-Usage
------
+How to get the model running
+----------------------------
 
-Visualisation scripts
----------------------
+GYRE is hard-coded into NEMO so nothing needs to be provided to run it out of
+the box.
 
+Custom analysis scripts
+-----------------------
 
 
 
