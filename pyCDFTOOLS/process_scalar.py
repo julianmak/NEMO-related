@@ -180,7 +180,7 @@ def txt_to_array(data_dir, key, file_key, query = False):
             print(words)
             print(" ")
             print("finished query, exiting scalar_to_txt...")
-            return (0, 0)
+            return (0, words)
             
           index = [j for j, s in enumerate(words) if key in s]
           if not index:
