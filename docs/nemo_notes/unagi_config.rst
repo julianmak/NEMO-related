@@ -34,6 +34,14 @@ The default is:
 * linearly varying temperature profile at the surface with :math:`e`-folding depth of 1000 metres
 * linear friction
 
+  .. figure:: figs/unagi_R010_xi.png
+    :width: 90%
+    :align: center
+    :alt: unagi_R010_xi
+    :name: unagi_R010_xi
+    
+    Vertical component of vorticity (in units of :math:`\mathrm{s}^{-1}`) at the surface from UNAGI at 10km resolution. Click `here <https://i.imgur.com/bT37Mo4.gifv>`_ for an animation.
+
 How to get the model running
 ----------------------------
 
