@@ -57,7 +57,7 @@ Do the following:
 
   mkdir XIOS
   cd XIOS
-  svn co http://forge.ipsl.jussieu.fr/ioserver/svn/XIOS/trunk@1322 xios-2.0
+  svn checkout -r 1322 http://forge.ipsl.jussieu.fr/ioserver/svn/XIOS/trunk xios-2.0
   
 .. note ::
 
@@ -198,7 +198,7 @@ to contain the NEMO codes and binaries:
 
   mkdir NEMO
   cd NEMO
-  svn co http://forge.ipsl.jussieu.fr/nemo/svn/NEMO/trunk@8666 nemo3.7-8666
+  svn checkout -r 8666 http://forge.ipsl.jussieu.fr/nemo/svn/NEMO/trunk nemo3.7-8666
   
 This checks out version 8666 (NEMO 3.7/4.0) and dumps it into a folder called
 ``nemo3.7-8666`` (change the target path to whatever you like). A similar

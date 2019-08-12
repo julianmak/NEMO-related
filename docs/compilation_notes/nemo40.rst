@@ -62,7 +62,7 @@ Do the following:
 
   mkdir XIOS
   cd XIOS
-  svn co http://forge.ipsl.jussieu.fr/ioserver/svn/XIOS/branchs/xios-2.5@1566 xios-2.5
+  svn checkout -r 1566 http://forge.ipsl.jussieu.fr/ioserver/svn/XIOS/branchs/xios-2.5 xios-2.5
   
 To get XIOS to compile, the compilers and packages need to be pointed to first,
 via modifying files in ``arch``. Since I am using ``gcc``, I did the following
@@ -221,12 +221,13 @@ to contain the NEMO codes and binaries:
 
   mkdir NEMO
   cd NEMO
-  svn co http://forge.ipsl.jussieu.fr/nemo/svn/NEMO/trunk@9925 nemo4.0-9925
+  svn checkout -r 9925 http://forge.ipsl.jussieu.fr/nemo/svn/NEMO/trunk nemo4.0
+  # svn checkout http://forge.ipsl.jussieu.fr/nemo/svn/NEMO/releases/release-4.0 nemo4.0
   
 This checks out version 9925 (NEMO 4.0 beta) and dumps it into a folder called
-``nemo4.0-9925`` (change the target path to whatever you like). A similar
-procedure to specify compilers and where XIOS lives needs to be done for NEMO.
-Again, because I of the compilers I am using:
+``nemo4.0-9925`` (change the target path to whatever you like). Or use the other
+command to get the stable release. A similar procedure to specify compilers and 
+where XIOS lives needs to be done for NEMO. Again, because I of the compilers I am using:
 
 .. code-block :: bash
   
