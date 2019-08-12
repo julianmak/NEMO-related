@@ -323,7 +323,7 @@ The raw files are taken from the HDF5 website using HDF5 v1.8.19. Again, with
   
 .. note::
   
-  If ``LD_LIBRARY_PATH`` is set then accordingly then zlib should be detected by
+  If ``LD_LIBRARY_PATH`` is set then zlib should be detected by
   the HDF5 install. If not, consider including the commented out ``CPPFLAGS``
   and ``LDFLAGS`` or the ``--with-zlib`` line (or both).
   
