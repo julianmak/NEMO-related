@@ -8,7 +8,7 @@
 HKUST HPC2 compilation
 ======================
 
-.. warning::
+.. note::
 
   To add: SLURM submission script, post processing script
 

@@ -341,5 +341,3 @@ for ``gyre`` in the `NEMO book
   ::
   
     ln_icebergs = .true. !this is a comment
-    
-  which should fix it...
