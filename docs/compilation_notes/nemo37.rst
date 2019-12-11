@@ -57,7 +57,7 @@ Do the following:
 
   mkdir XIOS
   cd XIOS
-  svn checkout -r 1322 http://forge.ipsl.jussieu.fr/ioserver/svn/XIOS/trunk xios-2.0
+  svn co http://forge.ipsl.jussieu.fr/ioserver/svn/XIOS/trunk@1322 xios-2.0
   
 .. note ::
 
@@ -198,7 +198,7 @@ to contain the NEMO codes and binaries:
 
   mkdir NEMO
   cd NEMO
-  svn checkout -r 8666 http://forge.ipsl.jussieu.fr/nemo/svn/NEMO/trunk nemo3.7-8666
+  svn co http://forge.ipsl.jussieu.fr/nemo/svn/NEMO/trunk@8666 nemo3.7-8666
   
 This checks out version 8666 (NEMO 3.7/4.0) and dumps it into a folder called
 ``nemo3.7-8666`` (change the target path to whatever you like). A similar
@@ -208,7 +208,7 @@ Again, because I of the compilers I am using:
 .. code-block :: bash
   
   cd nemo3.7-8666/NEMOGCM/ARCH
-  cp OLD/gfortran_linux.fcm ./gfortran_local.fcm
+  cp OLD/arch-gfortran_linux.fcm ./arch-gfortran_local.fcm
   
 None of the fcm files associated with gfortran actually worked for me out of the
 box so here is my build of it (click :ref:`HERE <sec:nemo-fcm-log>` for a
@@ -273,7 +273,7 @@ Then, I did (see :ref:`NEMO 3.6 <sec:nemo36>` for the reason):
 .. code-block :: bash
 
   cd ../CONFIG/
-  ./makenemo -j0 -r GYRE -n GYRE_testing -m gfortran_local
+  ./makenemo -j0 -r GYRE_PISCES -n GYRE_testing -m gfortran_local
     
 Edit ``/GYRE_testing/cpp_GYRE_testing.fcm`` and replaced ``key_top`` with
 ``key_nosignedzero`` (does not compile TOP for speed speeds, and make sure zeros
