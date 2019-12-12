@@ -28,24 +28,24 @@ Log on first using:
 
   ssh [-X] phys????@arcus-b.arc.ox.ac.uk
   
-On doing ``module list`` we should for the first time see no modules are loaded
-by default. If there are do ``module purge`` just for safety. Doing ``module
-avail`` shows the list of modules available. I'm going to use the ``gcc`` one,
-and by doing
+On first login doing ``module list`` should show no modules; if there are then
+might want to do ``module purge`` just for safety. Doing ``module avail`` shows
+the list of modules available. I'm going to use the ``gcc`` one, and by doing
 
 .. code-block:: bash
 
   module load /netcdf-parallel/4.4__mvapich2__gcc
   
 this loads NetCDF4 as well as its dependencies (which should be HDF5, gcc4.9.2
-and the relevant mvapich. Once I've done this I did
+and the relevant mvapich); I added that line to ``~/.bashrc`` so it loads from
+now on when logging in. Then I did
 
 .. code-block:: bash
 
   echo $LD_LIBRARY_PATH
   > /system/software/arcus-b/lib/netcdf/4.4/mvapich2-2.1.0__gcc-4.9.2/lib:/system/software/arcus-b/lib/hdf5/1.8.12/mvapich2-2.1.0__gcc-4.9.2/lib ...
   
-which tells me where the NetCDF and HDF5 libraries live. Then for XIOS I do
+which tells me where the NetCDF and HDF5 libraries live. So for XIOS I do
 
 .. code-block:: bash
 
