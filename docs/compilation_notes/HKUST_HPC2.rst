@@ -10,7 +10,7 @@ HKUST HPC2 compilation
 
 .. note::
 
-  To add: SLURM submission script, post processing script
+  To add: post processing script
 
 The build uses NEMO 3.7/4.0 + XIOS 2.0 as the example. For installing other
 versions, extrapolate from the other notes.
@@ -182,7 +182,7 @@ using
   # USER_INC    additional include files for the compiler,  e.g. -I<include dir>
   # USER_LIB    additional libraries to pass to the linker, e.g. -l<library>
 
-  %XIOS_HOME           /home/share/jclmak/XIOS/xios-2.0
+  %XIOS_HOME           $PI_HOME/XIOS/xios-2.0
 
   %CPP                 cpp
   %CPPFLAGS            -P -traditional
@@ -331,8 +331,10 @@ The system uses SLURM and the key commands are
 * ``squeue -u $USER``: check job info for ``$USER``
 
 ``sbatch`` could be used with arguments but I am going to have everything within
-``submit_nemo`` itself. The generic one I use is as follows (I have some ASCII
-art in there because I got bored at some point):
+``submit_nemo`` itself. The generic one I use (based on the one given on the
+`NOCL page <https://nemo-nocl.readthedocs.io/en/latest/work_env/mobius.html>`_)
+is as follows (I have some ASCII art in there because I got bored at some
+point):
 
 .. code-block:: bash
 

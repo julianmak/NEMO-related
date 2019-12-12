@@ -246,7 +246,7 @@ Again, because I of the compilers I am using:
 .. code-block :: bash
   
   cd nemo3.6-6800/NEMOGCM/ARCH
-  cp OLD/arch-gfortran_linux.fcm ./arch-gfortran_local.fcm
+  cp OLD/gfortran_linux.fcm ./gfortran_local.fcm
   
 None of the fcm files associated with gfortran actually worked for me out of the
 box so here is my build of it (click :ref:`HERE <sec:nemo-fcm-log>` for a
