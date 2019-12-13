@@ -537,7 +537,10 @@ The ``postprocess.sh`` I cooked up is here:
       echo "ERR: caught a non-zero exit status, check cleanup.log for what the deal was"
     else
       echo "OK: grabbed time stamp ${NEW_DATE_NUM} larger than threshold ${THRESH}, breaking..."
-      echo "OK: grabbed time stamp ${NEW_DATE_NUM} larger than threshold ${THRESH}, breaking..."
+      echo "OK: grabbed time stamp ${NEW_DATE_NUM} larger than threshold ${THRESH}, breaking..."      
+      # WARNING: this assumes that OLD_DATE_NUM is the only number within the file, which should
+      #          really be true
+      sed -i "s/${OLD_DATE_NUM}/${NEW_DATE_NUM}/g" namelist_cfg
     fi
     echo " "
     echo " "
