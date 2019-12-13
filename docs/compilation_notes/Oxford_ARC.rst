@@ -265,6 +265,7 @@ you see fit):
 * copying the ``nn_date0`` line into ``namelist_cfg`` from say ``namelist_ref`` if it doesn't exist already, because the time-stamps are modified by modifying ``nn_date0``
 * do a search in ``namelist_cfg`` and make sure there is only ever one mention of ``nn_date0`` (otherwise it grabs the wrong lines)
 * ``nn_date0`` should not begin with zeros (e.g. ``10101`` rather than ``010101`` in ``yymmdd``)
+*  in the experiment folder, do ``mkdir RESTARTS OUTPUTS`` (otherwise there is no folder to copy into)
 
 The ``postprocess.sh`` I cooked up is here:
 
