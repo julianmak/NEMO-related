@@ -249,7 +249,7 @@ follows (I have some ASCII art in there because I got bored at some point):
     echo "going into postprocessing stage..."
     # cleans up files, makes restarts, moves files, resubmits this pbs
 
-    #bash ./postprocess.sh
+    bash ./postprocess.sh >& cleanup.log
     exit
   fi
 
@@ -257,3 +257,210 @@ The ratio of ``XIOScore`` to ``NEMOcore`` I never found to lead to major
 differences for the size of runs I do (not larger than 300 cores); vaguely
 remember reading somewhere that ``XIOScore`` hovering between 5 to 10 per cent
 of ``NEMOcore`` is ok.
+
+The following post-processing script requires a few prepping (I make no
+apologies for the bad code and the script being fickle; feel free to modify as
+you see fit):
+
+* copying the ``nn_date0`` line into ``namelist_cfg`` from say ``namelist_ref`` if it doesn't exist already, because the time-stamps are modified by modifying ``nn_date0``
+* do a search in ``namelist_cfg`` and make sure there is only ever one mention of ``nn_date0`` (otherwise it grabs the wrong lines)
+* ``nn_date0`` should not begin with zeros (e.g. ``10101`` rather than ``010101`` in ``yymmdd``)
+
+The ``postprocess.sh`` I cooked up is here:
+
+.. code-block:: bash
+
+  #!/bin/bash
+  #! postprocess.sh
+  #! Script to clean up the NEMO outputs
+
+  export BASE_DIR=$DATA/NEMO/nemo3.7-8666/NEMOGCM/
+  export MODEL=GYRE
+  export NUM_CPU=30
+
+  # time-stamp increment, yymmdd
+  export DATE_INC=100000
+
+  # when to stop the daisy chaining, yymmdd
+  export THRESH=10
+
+  # error catching (only when restart files etc cannot be copied or made)
+  export ERR_CATCH=0
+
+  ########################################################
+  # 0) recombine files to one netcdf (restarts and/or outputs)
+  # restarts: extract the restart file time-step stamp
+  #              based on the *0000.nc restart which should (!) always exist
+  #           rebuild the restart file in the submission directory
+  # outputs:  put them in manually and just do a grab
+  #           this assumes only files at the current time-stamp is there,
+  #              otherwise it will bug out as it grabs wrong files
+  ########################################################
+
+  # restart files
+  export RES_TIMESTAMP=$(echo $(ls -d ${MODEL}_*_restart_0000.nc) | awk -F _ '{print $2 }')
+
+  $BASE_DIR/TOOLS/REBUILD_NEMO/rebuild_nemo ${MODEL}_${RES_TIMESTAMP}_restart $NUM_CPU
+  if (($? > 0)); then 
+    ERR_CATCH=$((ERR_CATCH + 1))
+    echo "  ERR: making the restart file in the folder"
+  fi
+  ##$BASE_DIR/TOOLS/REBUILD_NEMO/rebuild_nemo ${MODEL}_${RES_TIMESTAMP}_restart_ice $NUM_CPU
+
+  # output files (assumes a grid_T always exists)
+  #export OUT_FREQ=$(echo $(ls -d ${MODEL}_*_grid_T_0000.nc) | awk -F _ '{print $2 }')
+  #export OUT_START=$(echo $(ls -d ${MODEL}_*_grid_T_0000.nc) | awk -F _ '{print $3 }')
+  #export OUT_END=$(echo $(ls -d ${MODEL}_*_grid_T_0000.nc) | awk -F _ '{print $4 }')
+
+  #$BASE_DIR/TOOLS/REBUILD_NEMO/rebuild_nemo ${MODEL}_${OUT_FREQ}_${OUT_START}_${OUT_END}_grid_T $NUM_CPU
+  #$BASE_DIR/TOOLS/REBUILD_NEMO/rebuild_nemo ${MODEL}_${OUT_FREQ}_${OUT_START}_${OUT_END}_grid_U $NUM_CPU
+  #$BASE_DIR/TOOLS/REBUILD_NEMO/rebuild_nemo ${MODEL}_${OUT_FREQ}_${OUT_START}_${OUT_END}_grid_V $NUM_CPU
+  #$BASE_DIR/TOOLS/REBUILD_NEMO/rebuild_nemo ${MODEL}_${OUT_FREQ}_${OUT_START}_${OUT_END}_grid_W $NUM_CPU
+
+  # add more things in here if output freqs are different etc
+
+  ########################################################
+  # 1) pull out some variables to modify namelist file
+  ########################################################
+
+  # pull the number out
+  # add the increment to it for new date
+  # subtract appropriately to get the date stamp 
+  #   (e.g. 110101 - 8871 = 101230) and bulk out zeros
+
+  export OLD_DATE_STR=$(grep -ri "nn_date0" namelist_cfg)
+  export OLD_DATE_NUM=$(echo ${OLD_DATE_STR} | sed -e 's/[^0-9 ]//g' | awk '{print $NF}')
+  export NEW_DATE_NUM=$((OLD_DATE_NUM + DATE_INC))
+
+  # 8871 for 30 days a month (so the RES_STAMP=yyyy1230)
+  # otherwise do 8870        (so the RES_STAMP=yyyy1231)
+  # do something else for other time units
+  export RES_STAMP=$(printf %08d $((NEW_DATE_NUM - 8871)))
+
+  ########################################################
+  # 2) move files around and tidy up
+  ########################################################
+
+  cp -pv ${MODEL}_${RES_TIMESTAMP}_restart.nc ./RESTARTS/${MODEL}_${RES_STAMP}_restart.nc
+  cp -pv ./output.namelist.dyn ./OUTPUTS/output.namelist.dyn.${RES_STAMP}
+  #cp -pv ${MODEL}_${RES_TIMESTAMP}_restart_ice.nc ./RESTARTS/${MODEL}_${RES_STAMP}_restart_ice.nc
+  #cp -pv ./output.namelist.ice ./OUTPUTS/output.namelist.ice.${RES_STAMP}
+  cp -pv ./ocean.output ./OUTPUTS/ocean.output.${RES_STAMP}
+  cp -pv ./solver.stat ./OUTPUTS/solver.stat.${RES_STAMP}
+  cp -pv ./stdouterr ./OUTPUTS/stdouterr.${RES_STAMP}
+  cp -pv ./namelist_cfg ./OUTPUTS/namelist_cfg.${RES_STAMP}
+
+  #cp -pv ./volume_transport ./OUTPUTS/volume_transport.${RES_STAMP}
+  #cp -pv ./salt_transport ./OUTPUTS/salt_transport.${RES_STAMP}
+  #cp -pv ./heat_transport ./OUTPUTS/heat_transport.${RES_STAMP}
+
+  rm -v ${MODEL}_${RES_TIMESTAMP}_restart*
+  rm -v restart.nc 
+  #rm -v restart_ice.nc
+  rm -v ${MODEL}_*_????.nc
+  mv ${MODEL}*.nc ./OUTPUTS
+
+  cp -pv RESTARTS/${MODEL}_${RES_STAMP}_restart.nc ./restart.nc
+  if (($? > 0)); then
+    ERR_CATCH=$((ERR_CATCH + 1))
+    echo "  ERR: copying restart file into folder"
+  fi
+
+  #cp -pv RESTARTS/${MODEL}_${RES_STAMP}_restart_ice.nc ./restart_ice.nc
+  #if (($? > 0)); then 
+  #  ERR_CATCH=$((ERR_CATCH + 1))  
+  #  echo "  ERR: copying restart_ice file into folder"
+  #fi
+
+  ########################################################
+  # 3) if all good, then modify namelist_cfg and resbumit
+  ########################################################
+
+  if (($ERR_CATCH > 0)) || ((${NEW_DATE_NUM} > $THRESH)); then
+    if (($ERR_CATCH > 0)); then
+      echo " "
+      echo " "
+      echo " "
+      echo "ERR: caught a non-zero exit status, check cleanup.log for what the deal was"
+      echo "ERR: caught a non-zero exit status, check cleanup.log for what the deal was"
+    else
+      echo "OK: grabbed time stamp ${NEW_DATE_NUM} larger than threshold ${THRESH}, breaking..."
+      echo "OK: grabbed time stamp ${NEW_DATE_NUM} larger than threshold ${THRESH}, breaking..."
+    fi
+    echo " "
+    echo " "
+    echo " "
+    echo " "
+    echo " ... a wild Totoro appeared and blocked your resubmission!"
+    echo "         ,--'''',--.__,---[],-------._                               "
+    echo "       ,'   __,'            \         \--''''''==;-                  "
+    echo "     ,' _,-'  '/---.___     \       ___\   ,-'','                    "
+    echo "    /,-'      / ;. ,.--'-.__\  _,-'' ,| ','   /                      "
+    echo "   /''''''-._/,-|:\       []\,' '''-/:;-. '. /                       "
+    echo "             '  ;:::      ||       /:,;  '-.\                        "
+    echo "                =.,'__,---||-.____',.=                               "
+    echo "                =(:\_     ||__    ):)=                               "
+    echo "               ,'::::'----||::'--':::'._                             "
+    echo "             ,':::::::::::||::::::::::::'.                           "
+    echo "    .__     ;:::.-.:::::__||___:::::.-.:::\     __,                  "
+    echo "       '''-;:::( O )::::>_|| _<::::( O )::::-'''                     "
+    echo "   =======;:::::'-':::::::||':::::::'-':::::\=======                 "
+    echo "    ,--'';:::_____________||______________::::''----.          , ,   "
+    echo "         ; ::'._(    |    |||     |   )_,'::::\_,,,,,,,,,,____/,'_,  "
+    echo "       ,;    :::'--._|____[]|_____|_.-'::::::::::::::::::::::::);_   "
+    echo "      ;/ /      :::::::::,||,:::::::::::::::::::::::::::::::::::/    "
+    echo "     /; ''''''----------/,'/,__,,,,,____:::::::::::::::::::::,'      "
+    echo "     ;/                :);/|_;| ,--.. . '''-.:::::::::::::_,'        "
+    echo "    /;                :::):__,'//''\\. ,--.. \:::,:::::_,'           "
+    echo "   ;/              :::::/ . . . . . . //''\\. \::':__,'              "
+    echo "   ;/          :::::::,' . . . . . . . . . . .:'::\                  "
+    echo "   ';      :::::::__,'. ,--.. . .,--. . . . . .:'::'                 "
+    echo "   ';   __,..--'''-. . //''\\. .//''\\ . ,--.. :':::'                "
+    echo "   ;    /  \\ .//''\\ . . . . . . . . . //''\\. :'::'                "
+    echo "   ;   /       . . . . . . . . . . . . . . . . .:'::'                "
+    echo "   ;   (          . . . . . . . . . . . . . . . ;:::'                "
+    echo "   ,:  ;,            . . . . . . . . . . . . . ;':::'                "
+    echo "   ,:  ;,             . . . . . . . . . . . . .;':::'                "
+    echo "   ,:   ;,             . . . . . . . . . . . . ;'::;'                "
+    echo "     :   ;             . . . . . . . . . . . ,':::;                  "
+    echo "      :   '.          . . . . . . . .. . . .,':::;'                  "
+    echo "       :    '.       . . . . . . . . . . . ;::::;'                   "
+    echo "        '.    '-.   . . . . . . . . . . ,-'::::;                     "
+    echo "          ':_    ''--..___________..--'':::::;''                     "
+    echo "             '._::,.:,.:,:_ctr_:,:,.::,.:_;''                        "
+    echo "________________''\/'\/\/''''''\/'\/''\/'____________________________"
+
+  else
+  # WARNING: this assumes that OLD_DATE_NUM is the only number within the file, which should
+    #          really be true
+    sed -i "s/${OLD_DATE_NUM}/${NEW_DATE_NUM}/g" namelist_cfg
+    
+    echo "grabbed time stamp ${NEW_DATE_NUM} smaller than threshold ${THRESH}, resubmitting..."
+    echo "grabbed time stamp ${NEW_DATE_NUM} smaller than threshold ${THRESH}, resubmitting..."
+    echo "grabbed time stamp ${NEW_DATE_NUM} smaller than threshold ${THRESH}, resubmitting..."
+    echo "grabbed time stamp ${NEW_DATE_NUM} smaller than threshold ${THRESH}, resubmitting..."
+    echo " "
+    echo "OK: ...and here is Christopher resbumitting the job for you......"
+    echo "                  ,-.____,-.          "
+    echo "                  /   ..   \          "
+    echo "                 /_        _\         "
+    echo "                |'o'      'o'|        "
+    echo "               / ____________ \       "
+    echo "             , ,'    '--'    '. .     "
+    echo "            _| |              | |_    "
+    echo "          /  ' '              ' '  \  "
+    echo "         (    ',',__________.','    ) "
+    echo "          \_    ' ._______, '     _/  "
+    echo "             |                  |     "
+    echo "             |    ,-.    ,-.    |     "
+    echo "              \      ).,(      /      "
+    echo "         gpyy   \___/    \___/        "
+    sbatch submit_nemo
+
+  fi
+
+  exit
+  
+The output recombination steps have bene commented out because ARC does have
+parallel NetCDF4 and so the ``one_file`` option in ``field_def_nemo.xml``
+already takes care of the outputs.
