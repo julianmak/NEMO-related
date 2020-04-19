@@ -9,7 +9,8 @@ from matplotlib.colors import LinearSegmentedColormap
 
 # units in radians
 
-def draw_clock(yyyymmdd, clock_color = "xkcd:grey", progress_color = "Spectral", fontsize = 14, ax = None):
+def draw_clock(yyyymmdd, clock_color = "xkcd:grey", progress_color = "Spectral", 
+               fontsize = 14, ax = None, uniform_months = False):
   """
   fairly dumb way of drawing a clock, takes input as yyyymmdd and draws a clock
   through drawing some filled circles with contourf in polar plot
@@ -27,6 +28,8 @@ def draw_clock(yyyymmdd, clock_color = "xkcd:grey", progress_color = "Spectral",
      
                         a = plt.axes([0.95, .6, .2, .2], polar = True)
                         draw_clock("19510630", ax = a, fontsize = 10)
+            
+     uniform_months   if False then assumes no leap years, otherwise 30 days a month
   """
   
   if ax is None:
@@ -52,8 +55,10 @@ def draw_clock(yyyymmdd, clock_color = "xkcd:grey", progress_color = "Spectral",
   months = {}
   months["label"] = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"]
   months["theta"] = np.arange(0, 12, 1) * np.pi / 6.0 + np.pi / 12.0
-  months["days"] = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] # assume no leap years
-
+  if uniform_months:
+    months["days"] = [30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30] # assume 30 days a month
+  else:
+    months["days"] = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31] # assume no leap years
   # work out the date in radians
   year  = int(yyyymmdd[0:4])
   month = int(yyyymmdd[4:6])
@@ -106,3 +111,32 @@ def hex_duple_colormap(color_hex1, color_hex2, sample = False):
     plt.show()
     
   return cmap
+  
+def convert_nemo_times(time_in_sec, uniform_months = False):
+  """
+  Converts NEMO outputs of seconds since 1900 Jan 01 to a yyyymmdd date
+  
+  Can take a vector or number and returns a list
+  
+  NOTE: NOT TESTED WITH NON-UNIFORM MONTH DATA [Apr 19 2020]
+  """
+  if uniform_months: # assume 30 days per month
+    days_in_month = np.array([30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30, 30])
+    days_in_year = 360
+  else: # assume no leap years
+    days_in_month = np.array([31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31])
+    days_in_year = 365
+    
+  cumsum_days = np.cumsum(days_in_month)
+  sec_per_yr = 3600 * 24 * days_in_year
+  time_in_sec = (time_in_sec + sec_per_yr * 1900) / sec_per_yr
+  
+  yyyymmdd = []
+  for kt in range(len(time_in_sec)):
+    year  = int(time_in_sec[kt])
+    month = np.argmax((time_in_sec[kt] - year) * days_in_year < cumsum_days) + 1
+    day = int((time_in_sec[kt] - year) * days_in_year - cumsum_days[month - 1] + cumsum_days[0])
+    yyyymmdd.append(f"{year:04d}{month:02d}{day:02d}")
+    
+  return yyyymmdd
+  
