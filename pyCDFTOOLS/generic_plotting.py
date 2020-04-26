@@ -6,6 +6,15 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+import cmocean
+
+from matplotlib.colors import Normalize, LinearSegmentedColormap
+from matplotlib import cm
+from matplotlib.colorbar import ColorbarBase
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from matplotlib.colorbar import make_axes
+import matplotlib.ticker as mticker
+
 # define some defaults\n",
 plt.rcParams["font.family"] = "DejaVu Serif"
 plt.rcParams["mathtext.fontset"] = "cm"
