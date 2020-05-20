@@ -26,7 +26,7 @@ might be a possibility.
   I would suggest trying the following in reverse order of effort required:
 
   1. Get someone who knows what they are doing to do it for you! Compiling the following from scratch is not the most interesting activity and is actually quite fiddly (especially the HDF5 and NetCDF4 stuff)...if you don't have access to people who can do that, then try
-  2. Doing it through anaconda. There you are somewhat restricted to a certain set of compilers (gcc 4.8) but anaconda sorts out the dependencies for you. The only thing then you need to do is to force XIOS and NEMO to use the libraries within the anaconda installation. Failing that...
+  2. Doing it through anaconda. There you are somewhat restricted to a certain set of compilers (``gcc 4.8``) but anaconda sorts out the dependencies for you. The only thing then you need to do is to force XIOS and NEMO to use the libraries within the anaconda installation. Failing that...
   3. Do it from scratch. I'm sorry and good luck; see below for some notes to possibly ease your pain.
   
   As of 24 Oct 2018, the following remains on the agenda:
@@ -45,6 +45,10 @@ package dependencies for you (cf. ``apt``, ``yum`` on a Linux machine or
 on some things to do with installing and managing conda. I used the full
 anaconda with Python 3.6 but you could use miniconda or with other pythons
 probably.
+
+.. note::
+
+  [20 May 2020] Doing it through anaconda may well only work for Mac, because the gfortran versions does not seem to be available with linux through anaconda...
 
 First I created an environment so all the changes only apply in that
 environment:
@@ -178,20 +182,28 @@ file containing the following:
   export F77=/usr/bin/gfortran-4.9
   export CPP=/usr/bin/cpp-4.9
 
+  # if you want dynamic libraries then have this
+  export LD_LIBRARY_PATH=$BD/install/lib:$LD_LIBRARY_PATH
+  
+  # if you want static libraries then have these
   export C_INCLUDE_PATH=$BD/install/include:$C_INCLUDE_PATH
   export CPLUS_INCLUDE_PATH=$BD/install/include:$CPLUS_INCLUDE_PATH
   export LIBRARY_PATH=$BD/install/lib:$LIBRARY_PATH
-  export LD_LIBRARY_PATH=$BD/install/lib:$LD_LIBRARY_PATH
+
+  # not strictly required, only for overriding preferences in search for binary
   export PATH=$BD/install/bin:$PATH
-  
-Set this by doing ``source extra_variables``, and upon closing the terminal the
-variables will be flushed. Some of these may want to be added to ``~/.bashrc``
-for convenience. The instructions below attempts to build shared rather than
-static libraries, and somewhat depends ``LD_LIBRARY_PATH`` variable being set
-(with the added bonus that the ``ldd`` command provides an extra check whether
-the correct libraries are being called). Suggestions on how to build the
-packages without setting ``LD_LIBRARY_PATH`` or build static packages are given
-below (using ``LD_LIBRARY_PATH`` can be dangerous, see e.g., `here
+
+For my code testing it doesn't really matter too much whether the libraries are
+compiled as static or dynamic because I'm not hugely concerned about performance
+and stability, but static is probably safer. Set the above variables by doing
+``source extra_variables``; upon closing the terminal the variables will be
+flushed. Some of these may want to be added to ``~/.bashrc`` for convenience.
+The instructions below attempts to build shared rather than static libraries,
+and somewhat depends ``LD_LIBRARY_PATH`` variable being set (with the added
+bonus that the ``ldd`` command provides an extra check whether the correct
+libraries are being called). Suggestions on how to build the packages without
+setting ``LD_LIBRARY_PATH`` or build static packages are given below (using
+``LD_LIBRARY_PATH`` can be dangerous, see e.g., `here
 <http://xahlee.info/UnixResource_dir/_/ldpath.html>`_).
 
 .. note::
@@ -295,7 +307,8 @@ If you still want to install both zlib and HDF5, then do the following
 (following the instructions on the `Unidata UCAR website
 <https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf-install/Quick-Instructions.html>`_).
 The raw files are taken from the HDF5 website using HDF5 v1.8.19. Again, with
-``$BD`` as defined:
+``$BD`` as defined (don't include ``-fPIC`` or ``--enabled-shared`` if you want
+the libraries to be static):
 
 .. code-block:: bash
   
@@ -314,8 +327,7 @@ The raw files are taken from the HDF5 website using HDF5 v1.8.19. Again, with
   tar -xvzf $BD/source/hdf5-1.8.19.tar.gz
   cd hdf5-1.8.19
   #CPPFLAGS=-I$BD/install/include LDFLAGS=-L$BD/install/lib \
-  CFLAGS=-fPIC ./configure --enable-shared --enable-fortran --enable-cxx \
-  # --with-zlib=$BD
+  CFLAGS=-fPIC ./configure --enable-shared --enable-fortran --enable-cxx
   --prefix=$BD/install/
   make -j 2
   make check install
@@ -325,7 +337,7 @@ The raw files are taken from the HDF5 website using HDF5 v1.8.19. Again, with
   
   If ``LD_LIBRARY_PATH`` is set then accordingly then zlib should be detected by
   the HDF5 install. If not, consider including the commented out ``CPPFLAGS``
-  and ``LDFLAGS`` or the ``--with-zlib`` line (or both).
+  and ``LDFLAGS`` line (or both).
   
   HDF5 checking and installation can take a while. If it's more that 30 mins
   however it probably has crashed.
@@ -358,7 +370,8 @@ If you still want to install it, then do the following (following the
 instructions on the `Unidata UCAR website
 <https://www.unidata.ucar.edu/software/netcdf/netcdf-4/newdocs/netcdf-install/Quick-Instructions.html>`_).
 The raw files are taken from the the NetCDF4 website, using netcdf v4.4.1.1 and
-netcdf-fortran v4.4.4:
+netcdf-fortran v4.4.4 (don't include ``-fPIC`` or ``--enabled-shared`` if you
+want the libraries to be static):
 
 .. code-block:: bash
 
