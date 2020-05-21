@@ -275,8 +275,8 @@ Then, I did (see :ref:`NEMO 3.6 <sec:nemo36>` for the reason):
   ./makenemo -j0 -r GYRE_PISCES -n GYRE_testing -m gfortran_local
     
 Edit ``/GYRE_testing/cpp_GYRE_testing.fcm`` and replaced ``key_top`` with
-``key_nosignedzero`` (does not compile TOP for speed speeds, and make sure zeros
-are not signed). Then
+``key_nosignedzero`` (does not compile TOP for speed reasons, and make sure
+zeros are not signed). Then
   
 .. code-block :: bash
   

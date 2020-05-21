@@ -322,7 +322,7 @@ at the reasoning and a log of errors that motivates the changes):
     cd ../CONFIG/
     ./makenemo -j0 -r GYRE -n GYRE_testing -m gfortran_local
     
-  Then, edit add ``key_nosignedzero`` to the end
+  Then, add ``key_nosignedzero`` to the end
   of``/GYRE_testing/cpp_GYRE_testing.fcm`` (see note at the bottom of the page).
   ``-j0`` does all the folder creation and copying but doesn't do the compile
   step.
@@ -408,5 +408,3 @@ for ``gyre`` in the `NEMO book
   ::
   
     ln_icebergs = .true. !this is a comment
-    
-  which should fix it...
