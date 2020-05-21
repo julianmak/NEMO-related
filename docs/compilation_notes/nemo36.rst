@@ -244,7 +244,7 @@ This checks out version 6800 (NEMO 3.6) and dumps it into a folder called
 .. note ::
 
   ``svn checkout
-  https://forge.ipsl.jussieu.fr/nemo/svn/NEMO/releases/release-3.6 nemo3.6''
+  https://forge.ipsl.jussieu.fr/nemo/svn/NEMO/releases/release-3.6 nemo3.6``
   would pull the official version
 
 A similar procedure to specify compilers and where XIOS lives needs to be done

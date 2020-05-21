@@ -229,7 +229,7 @@ This checks out version 9925 (NEMO 4.0 beta) and dumps it into a folder called
 .. note ::
 
   ``svn checkout
-  https://forge.ipsl.jussieu.fr/nemo/svn/NEMO/releases/release-4.0 nemo4.0''
+  https://forge.ipsl.jussieu.fr/nemo/svn/NEMO/releases/release-4.0 nemo4.0``
   would pull the official version
 
 A similar procedure to specify compilers and where XIOS lives needs to be done
