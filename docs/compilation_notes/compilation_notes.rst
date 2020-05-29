@@ -43,6 +43,7 @@ which overrides the default ``gcc5.4`` on my computer.
    nemo40.rst
    Oxford_ARC.rst
    HKUST_HPC2.rst
+   HKUST_HPC3.rst
    packages.rst
 
 
