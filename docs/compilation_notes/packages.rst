@@ -162,6 +162,49 @@ gcc4.9``, or loaded through a network computer through something like a ``module
 load`` command. You may have to look it up on the internet if you don't have
 either of these.
 
+.. note::
+
+  If you don't have the right compilers you can always try and build your own
+  from source, but it takes a while (order of hours) and can be quite fiddly. On
+  e.g. HKUST HPC3 I needed some older compilers to play well with XIOS because
+  the newer gcc compilers (version after 6) seems to be quite strict with the
+  c++ code checking. To do this, I did
+  
+  .. code-block:: bash
+  
+    wget http://mirror.koddos.net/gcc/releases/gcc-5.4.0/gcc-5.4.0.tar.gz
+    tar -xvzf gcc-5.4.0.tar.gz
+    cd gcc-5.4.0/
+    ./contrib/download_prerequisites
+    cd ..
+    mkdir gcc5.4
+    cd gcc5.4
+    ../gcc-5.4.0/configure --prefix=/scratch/PI/jclmak/custom_libs/gcc5.4/ --enable-languages=c,c++,fortran [--disable-multilib]
+    make [-j4]
+    make [check] install
+  
+  The first line grabs a packaged version of gcc, in this case ``5.4.0``; I
+  chose the ``x.y.0`` version because I have had problems with the other
+  versions with dependency issues with ``flex`` etc. (disclaimer: not checked
+  overly rigourously because copmiling take soooo long). After unzipping, the
+  4th line downloads the per-requisite libraries into the source folder (gcc
+  official website highly recommends you **do not** compile the dependencies
+  yourselves manually). 
+  
+  The 6th and 7th line follows the gcc official recommendation in doing the
+  configuring and building **not** in the source directory; change the
+  ``--prefix`` to the place where you want to store the libraries, headers and
+  binaries. The ``--disable-multilib`` flag forces it to build a 64-bit one only
+  (I needed that on the particularly computer). Calling ``make`` will take
+  absolutely ages (order of hours, can speed up with giving more CPUs through
+  the ``-j`` flag) because it will do a bootstrap build (building needed
+  dependencies from existing compiler then using the build tools to build the
+  target compiler, then sorting out the dependencies with the newly built
+  compilers); can disable but not recommended. 
+  
+  Once the compilers are built then proceed as usual. Of course if you are on a
+  cluster you probably could/should get someone else to do this...
+  
 The order I did them in are:
 
 1. mpich (to bind the set of compilers to a MPI form; I chose ``mpich`` but it should work on ``OpenMP`` too)

@@ -13,6 +13,10 @@ sphinx notes
 * To get bibtex working on ReadTheDocs a ``requirements.txt`` may be needed.
 Having the following in there got the sphinx-bibtex extension working for me.
 
+``conda install sphinx``
+``pip install sphinx_rtd_theme``
+``pip install sphinxcontrib-bibtex``
+
 ::
 
   sphinx>=1.7.0b1
