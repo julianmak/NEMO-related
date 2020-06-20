@@ -98,7 +98,7 @@ and the long-phase speed that the total eddy energy is to be advected at is
 computed as (e.g. eq. 12.3.13 of :cite:`Gill-GFD`)
 
 .. math::
-    |c_p| \approx \frac{\beta}{f_0}c_n^2 = c_n^2 \frac{\cos\phi_0}{2\Omega R \sin^2 \phi_0}
+    |c_p| \approx \frac{\beta}{f_0^2}c_n^2 = c_n^2 \frac{\cos\phi_0}{2\Omega R \sin^2 \phi_0}
     
 In practice the expression diverges at the equator and the actual wave
 contribution to eddy energy advection as implemented in GEOMETRIC is bounded
