@@ -16,7 +16,7 @@ turbulent eddies in ocean climate models, first derived in
 summary of GEOMETRIC, so this page will focus on outlining the details
 relating to the NEMO implementation.
 
-The implementation of GEOMETRIC was done by providing a new module
+The implementation of GEOMETRIC was done in NEMO by providing a new module
 ``ldfeke.f90`` and adding appropriate calls and variables to ``ldftra.f90``,
 ``step.f90`` ``step_oce.f90`` and ``nemogcm.f90``. This was initially done in
 SVN version 8666, which is somewhere between the 3.6 stable and 4.0 beta, by
@@ -86,10 +86,30 @@ the depth-mean flow as well as a contribution associated with the westward
 propagation of eddies at the long Rossby phase speed (motivated by e.g.
 :cite:`Chelton-et-al11` and :cite:`KlockerMarshall14`). The advection is by the
 barotropic mean flow already computed in NEMO, with a first order upwind scheme.
-The Rossby wave contribution requires computing for the eigenvalue associated
-with the first baroclinic mode and uses :strike:`two subroutines (eke_rossby and
-eke_thomas)` the WKB expression given in :cite:`Chelton-et-al98` (their equation
-2.2). See :ref:`here <sec:nemo-adv>` for usage and implementation details.
+The baroclinic Rossby wave speed is obtained by computing :strike:`the eigenvalue
+associated with the first baroclinic mode (see e.g.` eq. 6.11.8 of
+:cite:`Gill-GFD`:strike:`) and uses two subroutines (eke_rossby and eke_thomas)`
+the WKB expression given in :cite:`Chelton-et-al98` (their equation 2.2):
+
+.. math::
+    c_n \approx \frac{1}{n\pi} \int^0_{-H} N(z)\; \mathrm{d}z
+    
+and the long-phase speed that the total eddy energy is to be advected at is
+computed as (e.g. eq. 12.3.13 of :cite:`Gill-GFD`)
+
+.. math::
+    c_p \approx -\frac{\beta}{f_0}c_n^2 = -c_n^2 \frac{\cos\phi_0}{2\Omega R \sin^2 \phi_0}
+    
+In practice the expression diverges at the equator and the actual wave
+contribution to eddy energy advection as implemented in GEOMETRIC is taken to be
+the minimum of the magnitude of the Rossby long-wave phase speed above and the
+tropical planetary wave phase speed (e.g. eq. 12.3.14 of :cite:`Gill-GFD`),
+i.e.,
+
+.. math::
+    c = \min\left(|c_p|, \left|\frac{c_n}{2n + 1}\right|\right) = \min\left(|c_p|, \left|c_1/3\right|\right)
+
+See :ref:`here <sec:nemo-adv>` for usage and implementation details.
 
 .. note ::
   As of Feb 2019 the removal of the routines to solve the tri-diagonal
@@ -111,18 +131,19 @@ Dissipation
 
 The damping of eddy energy is linearly damped and the coefficient is specified
 in ``namelist_cfg`` as a time-scale in *days* (which is subsequently converted
-in ``ldf_eke_init``). There is an option to read in an externally prepared NetCDF
-file ``geom_diss_2D.nc`` that varies in longitude and latitude. See
-:ref:`here <sec:nemo-dis>` for usage details, and **here** for a sample Python
-Notebook to generate the file.
+to *per seconds* in ``ldf_eke_init``). There is an option to read in an
+externally prepared NetCDF file ``geom_diss_2D.nc`` that varies in longitude and
+latitude in anticipation of further investigation. See :ref:`here
+<sec:nemo-dis>` for usage details, and **here** for a sample Python Notebook to
+generate the file.
 
 Diffusion
 ---------
 
 The diffusion of eddy energy is through a Laplacian (cf.
-:cite:`EdenGreatbatch08`), easily done through copy and pasting code that are in
-other NEMO modules. The GEOMETRIC scheme is actually stable (most likely because
-of the upwinding scheme). The diffusion may be switched off by setting
+:cite:`EdenGreatbatch08`), done through relevant copy and pasting of code that
+are in other NEMO modules. The GEOMETRIC scheme is actually stable (most likely
+because of the upwinding scheme). The diffusion may be switched off by setting
 ``rn_eke_lap = 0.`` in ``namelist_cfg`` which will bypass the relevant loop in
 ``ldf_eke``.
 
