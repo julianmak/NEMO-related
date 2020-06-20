@@ -42,7 +42,7 @@ spatio-temporal dependence), given by
 
 .. math::
    \frac{\mathrm{d}}{\mathrm{d} t} \int E\; \mathrm{d}z +
-   \nabla \cdot \left( (\tilde{\boldsymbol{u}} - c\boldsymbol{e}_1 ) \int E\; \mathrm{d}z \right) =
+   \nabla \cdot \left( (\tilde{\boldsymbol{u}} - |c|\boldsymbol{e}_1 ) \int E\; \mathrm{d}z \right) =
    \int \kappa_{\rm gm} \frac{M^4}{N^2}\; \mathrm{d}z -
    \lambda \int E\; \mathrm{d}z +
    \nu_E \nabla^2 \int E\; \mathrm{d}z,
@@ -68,8 +68,8 @@ The symbols are as follows:
 +-------------------------------+-----------------------------------------+----------------------+
 | :math:`\tilde{\boldsymbol{u}}`| depth-mean flow                         | :math:`m^2\ s^{-1}`  |
 +-------------------------------+-----------------------------------------+----------------------+
-| :math:`c`                     | long Rossby phase speed of 1st          | :math:`m^2\ s^{-1}`  |
-|                               | baroclinic mode                         |                      |
+| :math:`|c|`                   | magnitude of long Rossby phase speed    | :math:`m^2\ s^{-1}`  |
+|                               | of 1st baroclinic mode                  |                      |
 +-------------------------------+-----------------------------------------+----------------------+
 | :math:`\kappa_{\rm gm}`       | Gent--McWilliams coefficient            | :math:`m^2\ s^{-1}`  |
 +-------------------------------+-----------------------------------------+----------------------+
@@ -98,16 +98,15 @@ and the long-phase speed that the total eddy energy is to be advected at is
 computed as (e.g. eq. 12.3.13 of :cite:`Gill-GFD`)
 
 .. math::
-    c_p \approx -\frac{\beta}{f_0}c_n^2 = -c_n^2 \frac{\cos\phi_0}{2\Omega R \sin^2 \phi_0}
+    |c_p| \approx \frac{\beta}{f_0}c_n^2 = c_n^2 \frac{\cos\phi_0}{2\Omega R \sin^2 \phi_0}
     
 In practice the expression diverges at the equator and the actual wave
-contribution to eddy energy advection as implemented in GEOMETRIC is taken to be
-the minimum of the magnitude of the Rossby long-wave phase speed above and the
-tropical planetary wave phase speed (e.g. eq. 12.3.14 of :cite:`Gill-GFD`),
-i.e.,
+contribution to eddy energy advection as implemented in GEOMETRIC is bounded
+above by the magnitude tropical planetary wave phase speed (e.g. eq. 12.3.14 of
+:cite:`Gill-GFD`), i.e.,
 
 .. math::
-    c = \min\left(|c_p|, \left|\frac{c_n}{2n + 1}\right|\right) = \min\left(|c_p|, \left|c_1/3\right|\right)
+    |c| = \min\left(|c_p|, \left|\frac{c_n}{2n + 1}\right|\right) = \min\left(|c_p|, \left|c_1/3\right|\right)
 
 See :ref:`here <sec:nemo-adv>` for usage and implementation details.
 
