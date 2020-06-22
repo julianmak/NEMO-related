@@ -8,10 +8,6 @@
 Oxford ARC compilation
 ======================
 
-.. note::
-
-  To add: post processing script
-
 The build uses NEMO 3.7/4.0 + XIOS 2.0 as the example. For installing other
 versions, extrapolate from the other notes.
 
@@ -143,7 +139,7 @@ followed by
   cd ../CONFIG
   ./makenemo -r GYRE_PISCES -n GYRE_testing -m GCC_ARC -j0
   nano GYRE_testing/cpp_GYRE_testing.fcm # (have key_top -> key_nosignedzero)
-  ./makenemo -n GYRE_tesitng -m HKUST_HPC2 -j4
+  ./makenemo -n GYRE_tesitng -m GCC_ARC -j4
   
 and it should work. One more thing we will do is to make ``TOOLS/REBUILD_NEMO``:
 

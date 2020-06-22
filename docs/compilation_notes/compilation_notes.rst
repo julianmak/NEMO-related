@@ -13,7 +13,7 @@ page <http://forge.ipsl.jussieu.fr/nemo/wiki/Users/ModelInstall>`_ for the
 official details.
 
 While it is fairly straightforward on a supported cluster/supercomputer (e.g.
-first try following `NOCL ARCHER guide
+try `NOCL ARCHER guide
 <https://nemo-nocl.readthedocs.io/en/latest/work_env/archer.html>`_) it can be a
 bit temperamental on a local machine largely down to library and compiler
 compatibility. The following notes are what I did to get XIOS and NEMO compiling
@@ -22,7 +22,8 @@ default for other reasons). Extra things that need to be modified for other
 compilers I have tested will be given accordingly (see the top of the individual
 pages as to which compilers I have tested the notes with).
 
-I added the following to my ``~/.bashrc``:
+I added the following to my ``~/.bashrc`` so as to override the default
+compilers I had (change these if need be):
 
 .. code-block:: bash
 
@@ -31,8 +32,6 @@ I added the following to my ``~/.bashrc``:
   export FC=/usr/bin/gfortran-4.9
   export F77=/usr/bin/gfortran-4.9
   export CPP=/usr/bin/cpp-4.9
-  
-which overrides the default ``gcc5.4`` on my computer.
 
 .. toctree::
    :maxdepth: 2

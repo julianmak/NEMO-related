@@ -10,8 +10,7 @@ NEMO 3.7/4.0 + XIOS 2.0
 
 Tested with
 
-* ``gcc4.9``, ``gcc5.4`` on a laptop (Ubuntu 16.04)
-* ``gcc4.9`` on a modular system (Ubuntu 14.04, Oxford AOPP)
+* ``gcc4.9``, ``gcc5.4`` on a linux system
 * ``gcc4.8`` on a Mac (El Capitan OSX 10.11)
 
 This is the version I first implemented GEOMETRIC in, which is a development
@@ -19,16 +18,17 @@ version I guess (?) that eventually led to NEMO 4.0. The code structure largely
 follows NEMO 3.6 but the commands are slightly different. 
 
 If you get errors that are not documented here, see if :ref:`the XIOS1.0 NEMO3.6
-<sec:nemo36>` page contains the relevant errors.
+<sec:nemo36>` page contain the relevant errors.
 
 The assumption here is that the compiler is fixed and the packages (e.g.,
 NetCDF4 and a MPI bindings) are configured to be consistent with the compilers.
 See :ref:`here <sec:other-pack>` to check whether the binaries exist, where they
-are, and how they might be installed.
+are, and how they might be installed separately if need be. All the ``#CHANGE
+ME`` highlighted below needs be modified to point to the appropriate paths or
+binaries (soft links with ``ln -s`` are ok). 
 
-The instructions below assumes ``gcc4.9`` compilers but works for ``gcc4.8`` and
-``gcc5.4`` compilers too (with one extra flag required in XIOS compilation for
-the latter). I defined some extra variables on a Linux machine:
+The instructions below uses ``gcc4.9`` for demonstration (modifications with
+``gcc5.4`` as appropriate). I defined some extra variables on a Linux machine:
 
 .. code-block:: bash
 
@@ -39,10 +39,11 @@ the latter). I defined some extra variables on a Linux machine:
   export LIBRARY_PATH=$BD/install/lib:$LIBRARY_PATH
   export LD_LIBRARY_PATH=$BD/install/lib:$LD_LIBRARY_PATH
   
-Otherwise I have found the resulting libraries and binaries are not necessarily
-linked to the right ones (I have a few versions of libraries at different places
-as a result of the testing recorded here). You shouldn't need to do the above if
-the packages are forced to look at the right place, though the above may help.
+You shouldn't need to do the above if the packages are forced to look at the
+right place (e.g. via ``-L`` and/or ``-I`` flags with path to libraries and
+include files respectively). Not all of these are necessary depending on whether
+you choose to build/have static or dynamic libraries, and the
+``LD_LIBRARY_PATH`` seems to sort out a lot of problems with linking libraries.
 
 On a Mac done through anaconda the above was not necessary. My understanding is
 that setting these variables might not actually do anything unless an option is
@@ -76,9 +77,9 @@ just to make a fresh copy:
   cp arch-GCC_LINUX.fcm arch-GCC_local.fcm
   cp arch-GCC_LINUX.path arch-GCC_local.path
   
-The ``*.env`` file specifies where HDF5 and NetCDF4 binaries live. The ``*.fcm``
-file specifies which compilers and options to use. The ``*.path`` file specifies
-which paths and options to include. My files look like the following:
+The ``*.env`` file specifies where HDF5 and NetCDF4 libraries live. The
+``*.fcm`` file specifies which compilers and options to use. The ``*.path`` file
+specifies which paths and options to include. My files look like the following:
 
 .. code-block:: none
 
@@ -90,11 +91,12 @@ which paths and options to include. My files look like the following:
   export NETCDF_INC_DIR=/usr/local/include     # CHANGE ME
   export NETCDF_LIB_DIR=/usr/local/lib         # CHANGE ME
   
-You could check where the HDF5 and NetCDF4 directories are by doing ``which
-h5copy`` and ``which nc-config``, which should give you a ``directory/bin``, and
-it is the ``directory`` part you want. If you did install the libraries
-somewhere else as in :ref:`other packages <sec:other-pack>`, say, then make sure
-the ``which`` commands are pointing to the right place.
+You could get an idea where the HDF5 and NetCDF4 directories are by doing
+``which h5copy`` and ``which nc-config`` (assuming these are on ``$PATH``),
+which should give you a ``directory/bin``, and it is the ``directory`` part you
+want. If you did install the libraries somewhere else as in :ref:`other packages
+<sec:other-pack>`, say, then make sure the ``which`` commands are pointing to
+the right place.
 
 .. code-block:: none
 
@@ -125,11 +127,12 @@ the ``which`` commands are pointing to the right place.
   %FPP            cpp-4.9 -P                          # CHANGE ME
   %MAKE           make
   
-Check the MPI locations by doing ``which mpicc`` and ``mpicc --version`` say. If
-they are the right ones you could just have ``mpicc`` instead of the full path
-as given above. MPI bindings are used here to avoid a possible error that may
-pop up in relation to the build trying to find ``mpi.h``. The ``gmake`` command
-was swapped out by the ``make`` command (I don't have ``cmake``).
+Check the MPI locations and versions by doing ``which mpicc`` and ``mpicc
+--version`` say. If they are the right ones you could just have ``mpicc``
+instead of the full path as given above. MPI bindings are used here to avoid a
+possible error that may pop up in relation to the build trying to find
+``mpi.h``. The ``gmake`` command was swapped out by the ``make`` command (I
+don't have ``cmake`` on the laptop).
 
 .. note ::
 
@@ -202,7 +205,7 @@ to contain the NEMO codes and binaries:
 This checks out version 8666 (NEMO 3.7/4.0) and dumps it into a folder called
 ``nemo3.7-8666`` (change the target path to whatever you like). A similar
 procedure to specify compilers and where XIOS lives needs to be done for NEMO.
-Again, because I of the compilers I am using:
+Again, because of the compilers I am using:
 
 .. code-block :: bash
   
@@ -256,7 +259,7 @@ detailed log of how I got to the following):
   %USER_INC            %XIOS_INC %NCDF_INC
   %USER_LIB            %XIOS_LIB %NCDF_LIB
 
-The main changes are (again, see :ref:`here <sec:nemo-fcm-log>` for an attempt
+The main changes are (see :ref:`here <sec:nemo-fcm-log>` for an attempt
 at the reasoning and a log of errors that motivates the changes):
 
 * added ``%NCDF_HOME`` to point to where NetCDF lives
@@ -282,8 +285,17 @@ zeros are not signed). Then
   
   ./makenemo -j2 -n GYRE_testing -m gfortran_local |& tee compile_log.txt
   
-which should compile and take a few minutes. Check that it does run with the
-following:
+This uses two processors, with ``GYRE`` as a reference, builds a new folder
+called ``GYRE_testing``, with the specified architecture file, and outputs a
+log.
+
+.. note ::
+
+  The ``-r GYRE`` flag here only needs to be done once to create an extra folder
+  and add ``GYRE_testing`` to ``cfg.txt``. The subsequent compilations should
+  then read, e.g., ``./makenemo -n GYRE_testing -m gfortran_local``.
+  
+Check that it does run with the following:
 
 .. code-block :: bash
 
@@ -316,17 +328,16 @@ for ``gyre`` in the `NEMO book
 
   then it is not finding the right libraries. These could be fixed by adding the
   ``-Wl,-rpath,/fill me in/lib`` flag to the relevant flags bit in the ``*.fcm``
-  (or possibly in XIOS the ``path`` and/or ``env`` ) files (in this case it is
-  NetCDF as it calls the ``libnetcdff.6`` library) specifying exactly where the
-  libraries live. This can happen for example on a Mac or if the libraries are
-  installed not at the usual place.
-
+  files (or possibly in XIOS the ``path`` and/or ``env`` ) to specify exactly
+  where the libraries live. This can happen for example on a Mac or if the
+  libraries are installed not at the usual place.
+  
 .. note ::
 
   One infuriating problem I had specifically with a Mac (though it might be a
   ``gcc4.8`` issue) is that the run does not get beyond the initialisation
   stage. Going into ``ocean.output`` and searching for ``E R R O R`` shows that
-  it could complain about a misspelled namelist item (in my case it was in the
+  it complained about a misspelled namelist item (in my case it was in the
   ``namberg`` namelist). If you go into ``output.namelist.dyn`` and look for the
   offending namelist is that it might be reading in nonsense. This may happen if
   the comment character ``!`` is right next to a variable, e.g.

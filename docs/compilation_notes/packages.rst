@@ -10,8 +10,7 @@ Other packages
 
 Tested with
 
-* ``gcc4.9``, ``gcc5.4`` on a laptop (Ubuntu 16.04)
-* ``gcc4.9`` on a modular system (Ubuntu 14.04, Oxford AOPP)
+* ``gcc4.9``, ``gcc5.4`` on a linux system
 * ``gcc4.8`` on a Mac (El Capitan OSX 10.11)
 
 The following packages are needed for NEMO and XIOS and they may need to be
@@ -28,11 +27,6 @@ might be a possibility.
   1. Get someone who knows what they are doing to do it for you! Compiling the following from scratch is not the most interesting activity and is actually quite fiddly (especially the HDF5 and NetCDF4 stuff)...if you don't have access to people who can do that, then try
   2. Doing it through anaconda. There you are somewhat restricted to a certain set of compilers (``gcc 4.8``) but anaconda sorts out the dependencies for you. The only thing then you need to do is to force XIOS and NEMO to use the libraries within the anaconda installation. Failing that...
   3. Do it from scratch. I'm sorry and good luck; see below for some notes to possibly ease your pain.
-  
-  As of 24 Oct 2018, the following remains on the agenda:
-  
-  * intel compilers
-  * reproducing sample compatibility errors
 
 Anaconda
 --------
@@ -112,11 +106,11 @@ see below).
   
     export FCFLAGS=-Wl,-rpath,${CONDA_PREFIX}/lib
 	  
-  where ``${CONDA_PREFIX}`` should have been defined by anaconda.
+  where ``${CONDA_PREFIX}`` might have been defined by anaconda.
 
 If you already have the MPI capabilities bound to the compilers you will use
 then you can skip the following. To make life easier it is advisable to install
-either MPICH (Linux?) or OpenMPI (Mac?). You could try this by
+either MPICH or OpenMPI. You could try this by
 
 .. code-block:: bash
 
@@ -153,14 +147,13 @@ with ``Clang`` that I don't know how to fix without ``sudo`` access but it is
 probably fixable; I have not tried installing things with ``port`` through
 MacPorts partly because it requires Xcode to be installed.
 
-If you want a script to do all of the following on a Linux machine in one go,
-then please scroll right to the bottom of this page. The way I went about it was
-to first choose a set of compilers and use the same set of compilers to install
-the dependencies, primarily to avoid errors relating to compatibility of
-packages. For example, ``gcc4.9`` was downloaded through ``sudo apt-get install
-gcc4.9``, or loaded through a network computer through something like a ``module
-load`` command. You may have to look it up on the internet if you don't have
-either of these.
+A script to do all of the following on a Linux machine in one go can be found at
+bottom of this page. The way I went about it was to first choose a set of
+compilers and use the same set of compilers to install the dependencies,
+primarily to avoid errors relating to compatibility of packages. For example,
+``gcc4.9`` was downloaded through ``sudo apt-get install gcc4.9``, or loaded
+through a network computer through something like a ``module load`` command. You
+may have to look it up on the internet if you don't have either of these.
 
 .. note::
 
@@ -264,9 +257,10 @@ setting ``LD_LIBRARY_PATH`` or build static packages are given below (using
   
 Some or all of these may be skipped depending on which ones packages you have
 already installed and/or configured. The following installs all the libraries
-and binaries to the folder specified in ``$BD``; you have ``sudo`` access you
-could always just install it to ``/usr/local``. The sub-directories in the
-folder are:
+and binaries to the folder specified in ``$BD``; if you have ``sudo`` access you
+install it to ``/usr/local``, although I have found this can be very problematic
+if you need to remove the libraries (I've bricked my computer once)... The
+sub-directories in the folder are:
 
 * ``source``, where all the compressed files are going to live;
 * ``build``, where all the source file folders are going to live
@@ -330,8 +324,8 @@ the binaries, libraries and header files to include for later installations.
   
 .. note::
 
-  The ``./configure prefix=`` step requires an absolute (not relative) path;
-  change this to change the installation folder.
+  The ``./configure prefix=`` step requires an absolute (not relative) path for
+  the installation folder.
   
 
 zlib and HDF5
@@ -378,9 +372,10 @@ the libraries to be static):
   
 .. note::
   
-  If ``LD_LIBRARY_PATH`` is set then accordingly then zlib should be detected by
-  the HDF5 install. If not, consider including the commented out ``CPPFLAGS``
-  and ``LDFLAGS`` line (or both).
+  If ``LD_LIBRARY_PATH`` is set then zlib should be detected by the HDF5
+  install. If not, consider including the commented out ``CPPFLAGS`` and
+  ``LDFLAGS`` line (the ``--with-zlib`` command no longer works in the newer
+  HDF5).
   
   HDF5 checking and installation can take a while. If it's more that 30 mins
   however it probably has crashed.
@@ -394,8 +389,7 @@ the libraries to be static):
   static build. Replace ``--enable-shared`` with ``--disable-shared`` and do the
   first point in this note, possibly adding ``LIBS="-lz -lhdf5`` etc.; see `here
   <https://www.unidata.ucar.edu/software/netcdf/docs/building_netcdf_fortran.html>`_
-  for a guide. I would be tempted to keep the ``CFLAGS=-fPIC`` so shared builds
-  of NetCDF4 can still be made.
+  for a guide.
 
 NetCDF4
 -------

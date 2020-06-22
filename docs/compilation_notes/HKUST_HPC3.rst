@@ -284,9 +284,7 @@ point):
 Here because I am not using ``xios_server.exe`` I don't strictly need the ``-n
 40`` after ``mpirun`` (it will then just use however many cores that's given in
 ``#SBATCH -n``). Maybe see the :ref:`Oxford ARC <sec:oxford>` one to see how it
-might work when ``xios_server.exe`` is run alongside NEMO to do the I/O (see why
-you might want to do this on the `NEMO page
-<https://www.nemo-ocean.eu/framework/components/interfaces/>`_. 
+might work when ``xios_server.exe`` is run alongside NEMO to do the I/O. 
 
 The following post-processing script requires a few prepping (I make no
 apologies for the bad code and the script being fickle; feel free to modify as
@@ -497,7 +495,7 @@ The ``postprocess.sh`` I cooked up is here:
 
 A chunk of the output recombination procedures are not required if the
 ``one_file`` option in ``field_def_nemo.xml`` is enabled and possible (requires
-parallel NetCDF4 which I haven't bothered making here).
+parallel NetCDF4 which I didn't bother building here).
 
 
 

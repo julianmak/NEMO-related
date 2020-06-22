@@ -24,7 +24,7 @@ sourcing some shell scripts. The following is going to use ``gcc`` and
 The notes are **(psuedo)-chronological** (complete with errors) rather than
 the final product to highlight some pitfalls and workarounds to do with HDF5 and
 NetCDF4 compatibility (the system itself does not have parallel HDF5 or NetCDF4
-and it was a mystery which compiler the library was built with).
+and it was a mystery which compiler the libraries were built with).
 
 XIOS (1st try that doesn't quite work)
 --------------------------------------
@@ -154,7 +154,7 @@ As advertised, when doing the following
   cd $PI_HOME
   mkdir NEMO
   cd NEMO
-  svn co http://forge.ipsl.jussieu.fr/nemo/svn/NEMO/trunk@8666 nemo3.7-8666
+  svn checkout -r 8666 http://forge.ipsl.jussieu.fr/nemo/svn/NEMO/trunk nemo3.7-8666
   cd nemo3.7-8666/NEMOGCM/ARCH
   cp OLD/arch-gfortran_linux.fcm ./arch-HKUST_HPC2.fcm
   
@@ -402,9 +402,7 @@ point):
 Here because I am not using ``xios_server.exe`` I don't strictly need the ``-n
 24`` after ``mpirun`` (it will then just use however many cores that's given in
 ``#SBATCH -n``). Maybe see the :ref:`Oxford ARC <sec:oxford>` one to see how it
-might work when ``xios_server.exe`` is run alongside NEMO to do the I/O (see why
-you might want to do this on the `NEMO page
-<https://www.nemo-ocean.eu/framework/components/interfaces/>`_. 
+might work when ``xios_server.exe`` is run alongside NEMO to do the I/O . 
 
 The following post-processing script requires a few prepping (I make no
 apologies for the bad code and the script being fickle; feel free to modify as
@@ -615,7 +613,7 @@ The ``postprocess.sh`` I cooked up is here:
 
 A chunk of the output recombination procedures are not required if the
 ``one_file`` option in ``field_def_nemo.xml`` is enabled and possible (requires
-parallel NetCDF4 which I haven't got round to making here).
+parallel NetCDF4 which I didn't bother building here).
 
 
 
