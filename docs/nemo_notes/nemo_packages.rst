@@ -8,5 +8,27 @@
 Other NEMO packages
 ===================
 
+Some useful tools that come with NEMO are available in the analog of the
+``TOOLS`` folder. These are built using the ``ARCH`` files as you would for
+building an experiment with e.g.
 
+.. code-block:: bash
+  
+  ./maketools -n REBUILD_NEMO -m HKUST_HPC2
 
+Notes on the ones I have used may be found here.
+
+REBUILD_NEMO
+------------
+
+SECTIONS_DIADCT
+---------------
+
+WEIGHTS
+-------
+
+DOMAINcfg
+---------
+
+NESTING (AGRIF)
+---------------
