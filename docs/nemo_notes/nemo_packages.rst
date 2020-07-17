@@ -30,5 +30,7 @@ WEIGHTS
 DOMAINcfg
 ---------
 
+Use xios1 (see README)
+
 NESTING (AGRIF)
 ---------------
