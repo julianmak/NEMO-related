@@ -56,27 +56,7 @@ Custom analysis scripts
 Notes 1: building a custom model
 --------------------------------
 
-The following approach is strictly for NEMO models beyond v3.6, where one can
-build a customised model through providing a ``domcfg.nc``, which is the main
-goal of the following text. The details are given below are what I did for the
-idealised channel model UNAGI; see `here
-<https://github.com/julianmak/NEMO-related/blob/master/UNAGI/readme_of_sorts.txt>`_
-for a step-by-step guide of how I did it.
 
-The biggest obstacle in generating the appropriate ``domcfg.nc`` file for me was
-in transferring the code that modifies the vertical spacing variables
-``e3t/u/v/w`` to have a partial cell description. I first tried to brute force
-it by writing from scratch a file that provides all the relevant variables
-needed in the ``domcfg.nc``; see for example the input required in ORCA2. I gave
-up after a while and fell back to using the NEMO native :cite:`MadecImbard96`
-grid and the ``TOOLS/DOMAINcfg`` package, as follows:
-
-1. in an external folder (e.g., ``~/Python/NEMO/UNAGI``), create the bathymetry data through a program of your choice (I did it in `Python <https://github.com/julianmak/NEMO-related/blob/master/UNAGI/gen_NEMO_UNAGI_fields.ipynb>`_) and output it as a netCDF file (e.g. ``bathy_meter.nc``)
-2. link/copy it as ``bathy_meter.nc`` (the tool requires that specific naming) into the ``TOOLS/DOMAINcfg`` that comes with NEMO 
-3. modify the ``namelist_cfg`` file accordingly for the horizontal and vertical grid spacing parameters (see :ref:`here <sec:nemo_packages>` for usage and compiling notes)
-4. a ``domcfg.nc`` should result (if not, see ``ocean.output`` for messages), copy it back into the working folder in step 1
-5. open ``domcfg.nc`` and use those variables to create the ``state.nc`` and ``forcing.nc`` file again in the program of your choice (this is mostly to keep consistency; I did it in `Python <https://github.com/julianmak/NEMO-related/blob/master/UNAGI/gen_NEMO_UNAGI_fields.ipynb>`_)
-6. copy the ``domcfg.nc``, ``state.nc`` and ``forcing.nc`` (I prefixed them with something, e.g. ``UNAGI_domcfg_R010.nc``) and modify the ``namelist_cfg`` accordingly, e.g.
 
 ::
 
