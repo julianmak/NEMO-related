@@ -1,0 +1,665 @@
+NEMO model from scratch -- Julian Mak
+
+Notes for a Channel model, base it on Dave's
+
+TO CHANGE: (16 Jan 2019)
+! default iso-neutral tracer diffusion, GM = 1000 (1 deg resolution)
+! currently linear free surface, check if GEOMETRIC works though...
+! reduced horizontal viscosity, 2e5 instead of 1e6
+  -- 1e5 was maybe bit too small
+  -- 2e5 is maybe still a bit rough...
+! constant vertical diffusion everywhere for now
+  -- rn_avt0 = 1.0e-5, rn_avm0 = 1.0e-4
+  -- TKE is probably too diffusive, consider specifying a vertical diffusion
+     like Dave's model
+  -- sponge region widened but need to tweak the amplification factor
+! the retroaction value for dqdt in SST restoring seems ok, probably double it to
+  slam it down a bit more (so dqdt = -80 instead of -40)
+! a few more vertical levels (46) and deeper (4000m)?
+
+PROBABLY OK CONFIRMED:
+! vertical grid as in Madec & Imbard (1996) with modified parameters
+! with ridge, partial step
+! beta-plane, with values going from -1.25e-4 to -1e-5 or so (done in NEMO)
+! turned on no-slip boundary conditions (was free slip for GYRE)
+! linear bottom friction as in previous models
+! switched to a energy and enstrophy conserving scheme
+! implicit diffusion is on at 10, tracer only
+! tracer advection is kept as the FCT scheme (sometimes referred to as TVD)
+! 2400km wide with a 300km sponge (need to tweak the avt amplification factor)
+
+POSSIBILITIES:
+! consider instead doing what Ryan Abernathey does?
+  -- buoyancy flux on surface, relaxed to some vertical density profile over
+     vertical slice
+
+%%%%%%%%%%%%  09 Jul 2019 %%%%%%%%%%%%%
+
+* back to tuning
+  -- alp = 0.05 in channel seems to get a comparable transport (~105 Sv)
+  -- stratification profiles looks a bit weird, pycnocline a bit deep
+  -- have Redi still on, so maybe turn it off? need to tune a horizontal
+     hyperdiffusion
+
+%%%%%%%%%%%%  15 Apr 2019 %%%%%%%%%%%%%
+
+* Summary of changes:
+  -- forced the "l_ldfslp" flag to be on in "ldftra/ldf_eiv_init" when
+     "ln_ldfeiv" is detected, i.e., when GM is on
+     -- "l_ldfslp" is still on when any of the Redi options are used
+  -- removed the force stop commands in "ldftra" and "traldf" involving
+     the bilaplcian and GM flags
+  -- changed the logical flag in "tra_zdf_imp" to be on only when either of the
+     Redi options are used
+  -- un-did the changes in "ldfslp" and "traadv" (so they no longer appear in
+     MY_SRC)
+
+%%%%%%%%%%%%  14 Apr 2019 %%%%%%%%%%%%%
+
+* tried the new set place where "l_ldfslp" is set to be true when
+  "ln_ldfeiv" is true in "ldf_eiv_init"
+  -- all other options seem to work but when bilaplacian is used the thing
+     crashes
+     -- also true when laplacian is used with horizontal diffusion
+  -- now the default option breaks...
+     -- compared the ocean.output shows a different where "tra_nxt_fix" is
+        in the one that works but not in the one that failed
+  -- recompiled and the default works
+     -- no eiv, bilaplacian at 1e9 horizontal is ok
+     -- no eiv,   laplaican at   0 horizontal is ok
+     -- with eiv, a great local blob of NaNs appear
+  -- when eiv is on the differences in ocean.output are
+     -- "ldf_eiv_trp" <-- disabled this but still crashes
+     -- "ldf_slp_init"
+  -- probably one or both of "ln_ldfeiv" and "l_ldfslp" breaking things...
+     -- try just "l_ldfslp" but no "ln_ldfeiv" (so it shouldn't do anything)
+        -- forced this in "ldftra.F90"
+        -- seems to crash, switching it off fixes it
+        -- dynamically "l_ldfslp" switches on "TRA/trazdf_imp.F90", hack that
+           to see if code goes into it (some other ones in TOP but ignoring those
+           for now)
+           -- it certainly goes into "tra_zdf_imp" the question is whether
+              that kills the code, going to bypass the routines artifically
+              -- it's an implicit scheme with an inversion so adding junk
+                 somewhere is probably going to kill things globally
+           -- seems to have done it! 
+     -- the "tra_zdf_imp" routines are activate when either of the isoneutral
+        tracer diffusion options are used, i.e.
+
+        IF( ln_traldf_iso .OR. ln_traldf_triad )
+  -- that's seems to have done it!
+
+
+* the segfault from previous issue is probably because the slopes are being
+  called but they are not defined, so probably need to insert 
+  "l_ldfslp = .true." earlier somewhere
+  -- first pass is that it probably should go in "traldf/tra_ldf_init"
+  -- "ldf_tra_init" seems to go before "tra_ldf_init" so maybe it needs to go 
+     there...
+  -- with the present structure where (from "nemogcm.F90")
+
+      !                                         ! Lateral physics
+                            CALL ldf_tra_init      ! Lateral ocean tracer physics
+                            CALL ldf_eiv_init      ! eddy induced velocity param.
+      IF( l_ldfeke      )   CALL ldf_eke_init      ! GEOMETRIC param.
+                            CALL ldf_dyn_init      ! Lateral ocean momentum physics
+
+      !                                         ! Active tracers
+                            CALL tra_qsr_init      ! penetrative solar radiation qsr
+                            CALL tra_bbc_init      ! bottom heat flux
+      IF( lk_trabbl     )   CALL tra_bbl_init      ! advective (and/or diffusive) bottom boundary layer scheme
+                            CALL tra_dmp_init      ! internal tracer damping
+                            CALL tra_adv_init      ! horizontal & vertical advection
+                            CALL tra_ldf_init      ! lateral mixing
+                            CALL tra_zdf_init      ! vertical mixing and after tracer fields
+
+      !                                         ! Dynamics
+      IF( lk_c1d        )   CALL dyn_dmp_init      ! internal momentum damping
+                            CALL dyn_adv_init      ! advection (vector or flux form)
+                            CALL dyn_vor_init      ! vorticity term including Coriolis
+                            CALL dyn_ldf_init      ! lateral mixing
+                            CALL dyn_hpg_init      ! horizontal gradient of Hydrostatic pressure
+                            CALL dyn_zdf_init      ! vertical diffusion
+                            CALL dyn_spg_init      ! surface pressure gradient
+
+     the first place where slopes really need to be defined is "ldf_eiv_init"
+
+%%%%%%%%%%%%  11 Apr 2019 %%%%%%%%%%%%%
+
+* blew up immediately, maybe to do with the non-zero GM coefficient 
+  imposed as a minimum, trying to just switch it all off
+  -- seem to be blowing up either way, trying it on the thing that it worked 
+     first with nothing on
+     -- nope that blew up, maybe the restart file is screwed up
+     -- nope restart file is fine, so probably some screw up with the coding...
+     
+     ?? is it the "ln_dynldf_hor" instead of the "ln_dynldf_lev"...?
+
+  -- got a working version again? did a clean compile and maybe that did it...
+     -- clean start is ok
+     -- restart is ok too
+
+  -- updating the "ldftra.F90" routine (just commenting out the abort call)
+     -- code runs when "ldfeiv" is off
+     -- aborts when "ldfeiv" is on but that's because it wasn't registering
+        the changes for whatever reason
+     -- recompiled, aborts now because of the thing in "traldf" so that's ok
+     -- added "traldf" fix to see what happens
+        -- segfaults, try turning off eiv, runs ok
+     -- added "ldfslp" and recompiled
+        -- have eiv on but everything crashes
+        -- try having "ln_traldf_iso" defined and specified to be true, crashes
+        -- try removing the specification to "l_ldfslp" to be false (so basically
+           as in the usual "ldfslp.F90"), ok now
+        -- have "l_ldfslp = true" and force "ln_traldf_iso = false", fails
+
+           ?? probably the flags are triggering something, to look again ??     
+
+* in the process of making GM on + Redi off + bilaplacian on, found a display 
+  bug of sorts in the print commands, now it is "zah0" rather than "rn_aht_0"
+  that is printed to the "ocean.output" as the tracer diffusivity value
+
+* switched so that all the diffusion acts on geopotential (it doesn't actually
+  matter, just some combinations don't like it)
+  
+* added the option to have GM on, Redi off and bilaplacian tracer diffusion on
+  -- normally it kicks up a fuss about bilaplacian operator and ldfeiv cannot
+     be on at the same time
+  -- over-rode the stop routines in "ldftra.F90"
+  -- forced the "ldfslp.F90" to have the "l_ldftra" flag on, so that the slopes
+     are still computed for use in GM
+  -- the "ln_traldf_iso" and "ln_dynldf_iso" flags are to be specified and
+     normally switched off so that Redi is basically not on
+     -- tested that the various options will kick up a fuss and warnings as
+        appropriate, and the Redi stuff still works when the laplacian option
+        is switched on
+        
+     !! has this problem where if "ln_*_iso" and "bilap" options are both on
+        it would just crash and give no warning, not sure what is up with that...
+  
+  ?? going to test this on the 10km calculation to see
+     ?? slow down
+     ?? GM coefficient to be zero (should get normal calculation out)
+     ?? GM coefficient on to see how hard it kills the eddies
+
+%%%%%%%%%%%%  08 Apr 2019 %%%%%%%%%%%%%
+
+* how to set tracer diffusion?
+  -- linear EOS so Redi doesn't really do anything?
+  -- code complains if GM is on then Redi needs to be on too, with a Laplacian
+     form of the diffusion operator
+     -- override this by removing Redi (it's linear EOS so it doesn't matter)
+     -- override it by having Laplacian GM and biharmonic tracer diffusion
+
+%%%%%%%%%%%%  05 Apr 2019 %%%%%%%%%%%%%
+
+* settling on avt = 250x over the enlarged region, aiming for around 110 Sv of
+  total transport
+
+* changing the naming of the folders to EXP_R???_tau???x_geom (and geom -> none)
+  depending on resolution and magnitude of wind forcing (relative to 0.2 N m-2)
+  -- parameters to be set to
+
+     resolution (km)     100       50       25       15       10
+     dt                 3600     1800      900      750      600
+     aht_0 (isoneutral) 1000       --       --       --       --
+     ahm_0                 2e4     --       --       --       --
+     bht_0                --                                   1e09
+     bhm_0                --                                   1e10
+
+%%%%%%%%%%%%  20 Mar 2019 %%%%%%%%%%%%%
+
+* the 10km resolution model at avt 250x seems ok, gives about 110 Sv and the 
+  2 degree contour is around 1250m depth
+  -- the avt 150x is a bit shallower
+  -- trying a avt 500x just to see how deep it goes
+
+* trying a larger aeiv (2500) for the 1 degree calculation
+
+%%%%%%%%%%%%  04 Mar 2019 %%%%%%%%%%%%%
+
+* changed it so that the maximum of the vertical diffusion amplification is at
+  2400km which is a land point, just so all profiles are relatively consistent
+  rather than having it maximum at the last grid point (which makes means the
+  100km model with have a max over 100km)
+  -- got rid of all that stuff about gphit - 2400 - e2t * 1e-3 etc.
+
+%%%%%%%%%%%%  28 Feb 2019 %%%%%%%%%%%%%
+
+* setting up the 10km channel
+  -- noted that there is an offset with the Corilois parameter, probably not
+     too big a problem since beta is still fixed (f0 moves around a bit because
+     of how the first grid point is defined...)
+  -- using the Levy et al (2012) settings for now
+     -- switching of GM and Redi
+     -- biharmonic diffusion on momentum, 5e10, horizontal
+     -- biharmonic diffusion on tracers , 1e9 , geopotential (horizontal)
+     -- dt = 10mins, so 10 years is 518400 time steps (86400 * 3600 / 600)
+  -- testing on how long it takes and how many nodes it needs etc.
+
+* fixed the last wet point issue when amplifying the vertical diffusion
+  -- maybe test the resulting zonal temperature profile with the eddying
+     run, it might just be the coarse resolution calculations don't have
+     a strong enough GM coefficient too...
+  -- last wet point index is jpjm1 not jpkm1! <--- that was really dumb
+     -- instead of gphit(1,jpjm1) it is now 2400 - e2t(1,1) because when
+        parallel the arrays are all local, so gphit(1,jpjm1) does vary, while
+        gphit(1,jpjglo-1) is not right because gphit only goes up to jpj < jpjglo
+
+%%%%%%%%%%%%  17 Feb 2019 %%%%%%%%%%%%%
+
+* going back to long channel now with dqdt = -80 and alp = 2e-4 / rho0
+  -- updated initial state, sst and wind forcing
+  -- changed it so the amplification is now a read in parameter rn_avt_amp
+     -- rn_avt_amp = 250 first which is probably going to be too strong
+
+%%%%%%%%%%%%  15 Feb 2019 %%%%%%%%%%%%%
+
+* re-doing Dave's short model to see what it does
+  -- spreading the enhanced vertical diffusion over two grid points instead of
+     three, so a slightly wider sponge but it shouldn't make too much of a
+     difference right...?
+  -- dqdt = -40 has the 4 degree isotherm at the expected 100m or so, and the 
+     transport is about right, even if the ocean is a bit too warm (2 degree
+     isotherm is around 1750m)
+  -- dqdt = -80 is about the same but the interior is cooler, probably from
+     the increased damping on the northern edge, which is ideal
+  -- dqdt = -80 with GEOMETRIC slams it down a bit too much, but is reproducing
+     roughly the hydrographic stuff
+
+* fixed some domain length issues and offsets when defining the input wind
+  and initial temperature state
+
+* the horizontal may also not be diffusive enough, consider increasing it
+
+%%%%%%%%%%%%  08 Feb 2019 %%%%%%%%%%%%%
+
+* found a bug: the hydrostatic pressure gradient probably needs to be partial
+  rather than full step, so
+
+  ln_hpg_zco = .false., ln_hpg_zps = .true.
+
+* added a case in step.F90 so that if nn_havt is not specified then it reverts
+  to a background value rather than zero (because it is not initialised)
+
+* initial coarse run results in a deep thermocline, vertical diffusion was
+  probably too large
+  -- try reducing it by a factor of 2 to take into account of the sponge 
+     being twice as wide (500 -> 250 in zdfini.f90)
+     -- slighly better, still a bit deep though?
+        -- leap frog is really diffusive?
+  -- tried one with just avt = 1e-5
+     -- seemed ok and have the 2deg isotherm at 1500m like the model, but it
+        is probably still spinning down, going to run it for 500 years
+  -- tried one with aeiv = 2500 fixed
+     -- very deep
+  -- tried one with aeiv = 7500 fixed
+     --
+  -- tried one changing the thermal expansion coefficient to 2.07e-1 
+     (which is 2e-4 * 1035)
+     -- increses the density jump but not dramatically
+
+* 100km runs fairly speedy, getting a year per minute on 12 cores 
+  + 2 cores on XIOS
+
+%%%%%%%%%%%%  07 Feb 2019 %%%%%%%%%%%%%
+
+* putting this on ARCHER
+  -- swapped some namings around so the "postprocess.sh" moves only the intended
+     files around
+
+* generic removal of the eigenvalue solver
+  -- made a copy
+  -- testing this first in the channel model
+  -- seems ok, doing this for the rest of the ldfeke code
+
+%%%%%%%%%%%%  06 Feb 2019 %%%%%%%%%%%%%
+
+* the wave advection is screwy because "gphit" is used in calculating "f", so
+  it's not actually the fault of the c1 calculations...
+  -- if latitude is in degrees it would be ok but it is not here...
+  -- added a mod in to work out beta and f0 on the fly from the domcfg file
+     and commented out the one that uses latitude in degrees
+     -- there is an extra factor of 1.e-3 take into account that the false 
+        latitudes are in "km" not "m"
+     -- magnitude of about 5e-3 m/s = 0.5 cm/s which is comparable to what comes
+        out from ORCA2 (which is even slower than I thought...)
+  -- also did a general fix of using "ff_t" in calculating the Rossby 
+     deformation radius (no idea why I was using the sin(2 * pi * rad * phi) 
+     even though it is correct)
+  -- swapped out the long baroclinic phase speed expression to
+  
+     c1 = int(N) / (1 * pi)       [Chelton et al 1998, WKB approximation]
+     
+     -- overestimates by about 10%, acceptable, and it really doesn't matter in
+        this context because the advection is so weak anyway...
+     !! to be made more consistent with the Treguier code in ldf_eiv
+
+%%%%%%%%%%%%  05 Feb 2019 %%%%%%%%%%%%%
+
+* compiling with the GEOMETRIC code
+  -- needed to merge "step.F90" after hacking in the enhanced vertical diffusion
+  -- had to clean and then compile because there were some variables undeclared
+     which needed a fresh boot to get right
+  -- removed the equatorial reduction to take into account of the idealised
+     grids (otherwise the left bottom corner potentially gets wiped)
+     -- in both the recomputing of "aeiw" but also the wave advective fluxes
+     !! use the simplified expression to compute long Rossby phase speed
+  -- basically seems to work although the computation of the Rossby phase speed
+     seems to be a bit screwy (the eigenvalue computation is fine but the
+     multiplication to get long Rossby wave has gone wrong)
+     !! might not be a problem anyway when the simplified expression is used
+     
+%%%%%%%%%%%%  04 Feb 2019 %%%%%%%%%%%%%
+
+* going to attempt putting in custom vertical tracer diffusion
+  -- could hack it to give it an option of reading in a file
+  -- doing the manual amplification within NEMO itself here:
+     -- modify "step.f90" and "zdfini.f90" to multiply the specified constant
+        vertical tracer diffusion by some "avtb_2d" field
+        -- 1e-5 -> 5e-3 requires a factor of 500
+        
+
+!!the value of dqdt for SST restoring actually seems to do something alright at
+  the moment, keeping it for the time being
+
+* actually removed sections_diadct, it's not great for simplified models because
+  it is really designed for lat/lon? the details could be obtained from the U 
+  field anyway
+
+* adding sections_diadct to UNAGI
+  -- the coordinates now to give are in km
+  !! be careful of the spacing etc. otherwise it screws up the number of 
+     characters that are read
+     -- check that the output debug file in SECTIONS_DIADCT is giving the right
+        outputs, it should give out quite a few entries in the text file
+  -- added one that the LON is at 100 rather than 0, as well as one around the 
+     ridges
+     
+%%%%%%%%%%%%  02 Feb 2019 %%%%%%%%%%%%%
+
+* So combining all the knowledge now to have a roughly working model
+  -- model is to be called "UNAGI" (EEL with an Asian touch)
+  -- vertical grid uses the following parameters for the Madec & Imbard (1996)
+     
+     zacr   = 10.0
+     zkth   = 18.0
+     zdzmin = 10.0
+     zhmax  = 3000.0
+     
+     and is kept fixed across the calculations, goes from 10m at the top and 
+     gradually increases to 220m or so at depth
+  -- make it 9000km long probably (Dave has 9600 because it parallelises better)
+  -- probably 2400km wide which includes a sponge region of 300km with enhanced 
+     vertical diffusion
+     -- 2400 and 300 because the resolutions below divide quite well into it
+     ?? for testing purposes just have it at 4000km
+  -- resolutions will probably be 100km, 50km, 25km, 15km, 10km, (5km)
+     -- roughly 1, 1/2, 1/4, 1/6, 1/10, (1/20) resolution
+     -- corresponds to 
+        res  [nx short]  nx    ny      nz
+        100   40         90    24 + 2  30 + 1
+         50   80        180    48 + 2  30 + 1
+         25  160        360    96 + 2  30 + 1
+         15             600   160 + 2  30 + 1
+         10  400        900   240 + 2  30 + 1 
+          5
+  
+  ?? enhanced vertical diffusion can be through imposing it or making the 
+     minimum energy in the TKE scheme stronger over a region
+     -- former more established, justification being 5e-3 = 1e-5 over the basin
+        shrunk into a few gridcells
+
+  ?? quadratic vs linear drag
+     -- former more established, though probably doesn't matter
+
+  ?? SST restoring to be modified
+  
+  ?? free surface? need to check what GEOMETRIC does too
+     
+  -- linear equation of state with temperature
+     -- modify the reference temperatures and rho0 stuff, doesn't really matter
+     -- could specify it as 2.0e-4 * 1035 = 2.07e-1 (default = 1.6550e-1)
+  -- need to mess with the horizontal viscosity
+     -- just to do it, could consider doing it in the new NEMO 4.0 with 
+        Smagorinsky but probably doesn't matter
+  -- diagnoses of sections would be excellent but probably not entirely 
+     important
+
+     
+%%%%%%%%%%%%  31 Jan 2019 %%%%%%%%%%%%%
+
+?? the SST restoring might be too strong, and the state isn't changing very 
+   much? (time step is quite big too)
+   
+* have a look in the analogous MITgcm model to see what the first few years
+  is like (10 day outputs over one year)
+  -- with both variable and constant vertical diffusion
+     -- variable diffusion has the SST moving around and wriggling within a year
+        as expected, similar for constant diffusion
+     -- SSH tightening up and forming a jet 
+  -- turned off grid dependent horizontal viscosity and have large Laplacian
+     -- SSH wriggling so it's not that...?
+  -- not to do with the Leith viscosity either...
+  -- not to do with dt it seems
+  
+  -- typical values from MIT run (large Laplacian viscosity)
+     U    -0.015  0.17   (magnitude up by a factor of 4 for low grid viscosity)
+     V    -0.101  0.258  (as above)
+     eta  -1.096  1.055  (similar in magnitude to here)
+     
+     -- NEMO velocity U values are much larger
+                      V values are have negative values too small
+                      
+  -- something to do with the equation of state values?
+     -- modified "eosbn2" to change "rau0" and the "Tref" values to see what it 
+        does
+     -- moves rho0 but absolutely no density variations whatsoever? (as seen in
+        the restart file)
+     -- using the standard value for thermal expansion fixes this
+        -- because the value of 1.6e-1 \approx 2e-4 / rho0
+
+%%%%%%%%%%%%  30 Jan 2019 %%%%%%%%%%%%%
+     
+* turns out the below is not true, only need it for a curvilinear grid, if it
+  is rectilinear with partial cells the only thing needed is the 
+  "bathy_meter.nc" file
+  -- the variable needs to be called "Bathymetry" (case sensitive)
+  -- the dom_zgr routine recalculates all the other junk itself
+  
+* created a "modEEL" based on the EEL one of Marina
+  -- for the horizontal grid the false starting latitude "ppphi0" was put at
+     -50 degrees or so
+     
+%%%%%%%%%%%%  29 Jan 2019 %%%%%%%%%%%%%
+
+* really annoying dealing with the partial cell stuff, consider instead doing
+  it using the "DOMAINcfg" module in NEMO
+  -- need to cook up a 
+     "coordinates.nc" to generate the horizontal grid
+     "bathy_meter.nc" for the bathymetry depth
+     "bathy_level.nc" for the bottom level stuff, which is to be used with
+     a custom script that uses the native NEMO tanh grid in the vertical
+  
+  -- on the beta plane the "ff_f/t" are computed on the fly so be a bit careful
+     with constructing the horizontal grid to take care of that
+     -- check "domhgr.F90" for this
+     -- can probably do this through the namelist_cfg?
+     
+  -- there is an EEL2 (2 = 2km) channel config that Marina set up, maybe base 
+     things on that? 
+     
+%%%%%%%%%%%%  28 Jan 2019 %%%%%%%%%%%%%
+
+* added beta in
+  -- had a discrepancy with grid conventions, things shifted according to
+  
+#     !-------!   
+#     !       !
+# ____!___F   !    ____=========
+# |   !   |   !    |   !   |   !
+# |   T---|---!    |   T   U   !
+# |_______|        |___!===|---!
+
+* switching the initial state salinity back to 35 even though it is not used
+  -- solver.stat has stuff beyond the 8th digit but it's not used
+
+* doing some testing before putting in the partial step stuff in
+  -- switched off the wind forcing and turned on GM to aeiv = 1000
+     -- not very different, try turning down the lateral viscosity from 1e6 to 
+        -- 1e5 (OK, a bit noisy when wind is on)
+        -- 1e4 (a bit noisy)
+        -- 5e5 (less noisy but flow is much weaker)
+     -- try turning down the iso-neutral diffusion from 1e3 to
+        -- 1e2 (OK? little bit messy in the velocity field)
+        -- 5e2 (OK)
+     !! probably just stick with iso-neutral diffusion at 1e3, but modify the
+        momentum diffusion accordingly
+        
+* noticed that it was free-slip on the sides, turn it to no-slip
+  -- rn_shlat = 0 -> rn_shlat = 2
+
+* linear vs nonlinear friction?
+  -- seems to have reduced the transport quite substantially in combination with
+     the ridge, may consider sticking with this (since Munday et al model uses
+     that too)
+     -- alternative trying messing around with the coefficients
+        
+* added the full step topography routines
+  -- seems to have resulted in gyres, which is ok? flow is still large
+     -- large flow problem sort of fixed when switching over to linear friction
+
+%%%%%%%%%%%%  17 Jan 2019 %%%%%%%%%%%%%     
+
+* making the partial steps routine
+  -- defining a "zht" and "zhu" as a temporary dummy depth on T/U points (don't
+     need a V or F one here)
+     -- note that the U grid is shifted rightwards of the T grid
+
+%%%%%%%%%%%%  16 Jan 2019 %%%%%%%%%%%%%
+
+* starting again from probably what is a vertical grid problem so that vertical
+  mixing is not in the top cell? (or at least is garbage)
+  -- try just using the GYRE vertical grid and see what that does
+  -- discrepancy between the "mbathy" output variable?
+     -- traced it down to an off-by-one discrepancy in "bottom_level", now have
+        jpkglo - 1 instead of jpkglo
+     -- seems to have dealt with the zero diffusion on top and non-zero 
+        diffusion on bottom! Reverting to previous vertical grid spacing
+
+* really really large transports?
+  -- updated mesh_mask.nc and rebuild sections executable to see if anything
+     changes (since k_bot is now fixed)
+  ?? still really really large???
+     -- flow goes all the way to bottom, perhaps not unexpected since there is
+        no ridge, but still, almost 2000 Sv transport...?
+  -- turning TKE on enhances diffusion quite a bit but not really fixing the
+     problem of large transport, probably need a ridge
+
+%%%%%%%%%%%%  04 Jan 2019 %%%%%%%%%%%%%
+
+* keep getting "STOP ctl bad opening"
+  -- switched off "key_diadct"
+  -- was because the *_transport files were still around, should really find an
+     automated fix for this...leaving the diadct off for the moment
+     
+* switch the zonal wind forcing off to see how it spins down
+  -- no rotation means there is basically no flow
+  -- develops a counter counter flow of sorts
+
+* want to test the vertical diffusion a bit
+  -- try "ket_zdftke" -> "key_zdfcst"
+  -- diffuses very weakly with "rn_avt0 = 1.0e-5"
+  !! not much change with "rn_avt0 = 1.0e-3"
+     -- looks like it's not quite right as the top cell has no vertical 
+        diffusivity but bottom cell has (in grid_W file)
+  
+* add a rotation in
+  -- provisionally use what Scott used, f_plane, "ff_f" = -1.25e-4
+  -- looks like it is doing some sort of organisation into zonal structures
+     when there is no wind
+
+%%%%%%%%%%%%  20 Oct 2018 %%%%%%%%%%%%%
+
+* added the "section_diadct" in which seems to work
+  -- remember to get rid of the files before running the calculations
+
+* replaced the "nav_lat" and "nav_lon" variables to be in meters
+  -- kept all the "glam" and "gphi" in representative degrees
+     for the other codes that it would use (e.g. to avoid tapering near "zero")
+
+* fixed (?) some vertical grid things?
+  -- ditched the Madec & Imbard (1996) stuff
+  -- specify the model levels ("gdepw_1d"), then work out the spacings 
+     ("e3t_1d") but add in an extra entry at the bottom, half "gdepw_1d" to get
+     "gdept_1d" but again add in an extra entry at the bottom ("e3t_1d[end]"),
+     then from that generate "e3w_1d" (with top entry modified)
+     -- be careful which depths are used, don't think the "depths" that come with
+        the standard NetCDF files are quite right...
+
+* turned sst restoring on with "ln_sstr"
+  -- whacked up the "rn_dqdt" value to have a stronger restoring
+
+* switched salinity off by switching the simplified EOS, then getting rid of the
+  extra coefficients by setting them to zero
+  -- the input salinity profile is zero and remains zero, which it should
+
+* playing around with vertical physics, this one might be tricky...
+  ?? consider NEMO 4.0 as there is some sort of grid-aware diffusion scheme?
+
+%%%%%%%%%%%%  08 Oct 2018 %%%%%%%%%%%%%
+
+? there is a slight offset at the moment with the dummy longitude and latitudes
+  ?? consider just replacing it with actual widths and lengths in metres?
+
+* doing the below didn't crash at least but presumably doing nothing useful?
+  -- still taking the user defined inputs from the GYRE model, get rid of these
+  -- have "ln_usr = .false." and "ln_flx = .true."
+     -- define some inputs as in Dave's model
+
+* Put in some grid spacings etc etc, see what that does
+
+  -- "jpiglo", "jpjglo" and "jpkglo" not in the domcfg file:
+
+       sum ilcit(i,1)=   0.0000000000000000       jpiglo=           0
+       sum ilcit(1,j)=   0.0000000000000000       jpjglo=           0
+
+     ****************
+     *              *   
+   1 *    0  x  0   *   
+     *          0   *         
+     *              *   
+     ****************
+     
+  -- "ln_zco", "ln_zps", "ln_sco", "ln_isfcav" not defined:
+  
+  ===>>> : E R R O R
+         ===========
+
+ iom_varid, file: channel_R100_domcfg.nc, var: ln_zco not found
+
+     set partial steps on ("ln_zps = 1")
+     -- looks like setting partial steps is quite irritating, look at how 
+        "OVERFLOW/usrdef_zgr.F90" do it
+  
+  -- set "jperio = 1"
+     -- from "dom_oce.F90",
+        = 0 closed
+        = 1 cyclic East-West
+        = 2 equatorial symmetric
+        = 3 North fold T-point pivot; 
+        = 4 cyclic East-West AND North fold T-point pivot
+        = 5 North fold F-point pivot
+        = 6 cyclic East-West AND North fold F-point pivot
+
+
+%%%%%%%%%%%%  07 Oct 2018 %%%%%%%%%%%%%
+
+* Looks like the "domcfg" file has a whole load of variables, mostly grid,
+  periodicity and Corilois parameter things
+  -- dimensions are to be called x, y, z, t
+  
+* Linear EOS from choosing "nn_eos = 2" and specifying parameters accordingly
+  -- get rid of salt?
+
+

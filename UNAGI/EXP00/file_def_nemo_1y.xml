@@ -1,0 +1,79 @@
+    <!-- 
+============================================================================================================
+=                                           output files definition                                        =
+=                                            Define your own files                                         =
+=                                         put the variables you want...                                    =
+============================================================================================================
+    -->
+    
+    <file_definition type="one_file" name="@expname@_@freq@_@startdate@_@enddate@" sync_freq="10d" min_digits="4">
+    
+      <file_group id="1ts" output_freq="1ts"  output_level="10" enabled=".TRUE."/> <!-- 1 time step files -->
+
+      <file_group id="1h" output_freq="1h"  output_level="10" enabled=".TRUE."/> <!-- 1h files -->
+      <file_group id="2h" output_freq="2h"  output_level="10" enabled=".TRUE."/> <!-- 2h files -->
+      <file_group id="3h" output_freq="3h"  output_level="10" enabled=".TRUE."/> <!-- 3h files -->     
+      <file_group id="4h" output_freq="4h"  output_level="10" enabled=".TRUE."/> <!-- 4h files -->
+      <file_group id="6h" output_freq="6h"  output_level="10" enabled=".TRUE."/> <!-- 6h files -->
+     
+      <file_group id="1d" output_freq="1d"  output_level="10" enabled=".TRUE."/> <!-- 1d files -->
+      <file_group id="3d" output_freq="3d"  output_level="10" enabled=".TRUE."/> <!-- 3d files -->    
+      <file_group id="5d" output_freq="5d"  output_level="10" enabled=".TRUE."/>  <!-- 5d files -->   
+      <file_group id="1m" output_freq="1mo" output_level="10" enabled=".TRUE."/> <!-- real monthly files -->
+      <file_group id="2m" output_freq="2mo" output_level="10" enabled=".TRUE."/> <!-- real 2m files -->
+      <file_group id="3m" output_freq="3mo" output_level="10" enabled=".TRUE."/> <!-- real 3m files -->
+      <file_group id="4m" output_freq="4mo" output_level="10" enabled=".TRUE."/> <!-- real 4m files -->
+      <file_group id="6m" output_freq="6mo" output_level="10" enabled=".TRUE."/> <!-- real 6m files -->
+
+      <file_group id="1y"  output_freq="1y" output_level="10" enabled=".TRUE."> <!-- real yearly files -->
+        <file id="file1" name_suffix="_grid_T" description="ocean T grid variables" >
+          <field field_ref="toce"          />
+          <field field_ref="soce"          />
+          <field field_ref="sst"           />
+          <field field_ref="sss"           />
+          <field field_ref="ssh"           />
+          <field field_ref="empmr"         />
+          <field field_ref="qsr"           />
+          <field field_ref="saltflx"       />
+          <field field_ref="qt"            />
+          <field field_ref="mldr10_1"      />
+          <field field_ref="mldkz5"        />
+          <!-- GM/GEOM diagnostics -->
+          <field field_ref="eke"         />
+          <field field_ref="trd_eke_adv_ubt" />
+          <field field_ref="trd_eke_adv_wav" />
+          <field field_ref="trd_eke_lap" />
+          <field field_ref="trd_eke_peS" />
+          <field field_ref="trd_eke_keS" />
+          <field field_ref="trd_eke_dis" />
+        </file>
+
+        <file id="file2" name_suffix="_grid_U" description="ocean U grid variables" >
+          <field field_ref="uoce"          />
+          <field field_ref="utau"          />
+          <field field_ref="uocetr_eff"    />
+        </file>
+
+        <file id="file3" name_suffix="_grid_V" description="ocean V grid variables" >
+          <field field_ref="voce"          />
+          <field field_ref="vtau"          />
+        </file>
+
+        <file id="file4" name_suffix="_grid_W" description="ocean W grid variables" >
+          <field field_ref="woce"          />
+          <field field_ref="avt"           />
+          <!-- GM/GEOM diagnostics -->
+          <field field_ref="aeiv_geom"    name="aeiw_tave"                        />
+          <field field_ref="rossby_rad"   name="rossby_rad_tave"                  />
+          <field field_ref="c1_vert"      name="c1_vert"    />
+          <field field_ref="c_ros"        name="c_ros"      />
+        </file>
+
+      </file_group>
+
+      <file_group id="2y"  output_freq="2y" output_level="10" enabled=".TRUE."/> <!-- real 2y files -->
+      <file_group id="5y"  output_freq="5y" output_level="10" enabled=".TRUE."/> <!-- real 5y files -->
+      <file_group id="10y" output_freq="10y" output_level="10" enabled=".TRUE."/> <!-- real 10y files -->
+
+   </file_definition>
+ 
