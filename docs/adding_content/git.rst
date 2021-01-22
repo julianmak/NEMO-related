@@ -18,8 +18,8 @@ token.
 
 .. code-block:: bash
 
-  git config --global credential.helper cache
-  git config --global crediential.helper 'cache --timeout=31104000'
+  git config --global credential.helper store
+  git config --global crediential.helper 'store --timeout=31104000'
   
 where you can change the ``timeout`` entry to something that works for you (something large if you want to keep the token active, units are in seconds)
 5. go back to webpage, copy the access token, git as normal, but when it asks you for a password, paste the access token in instead
