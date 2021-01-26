@@ -22,6 +22,7 @@ token.
   git config --global crediential.helper 'store --timeout=31104000'
   
 where you can change the ``timeout`` entry to something that works for you (something large if you want to keep the token active, units are in seconds)
+
 5. go back to webpage, copy the access token, git as normal, but when it asks you for a password, paste the access token in instead
 6. if it worked properly then now you get to bypass the username and password typing until the timeout period
 
