@@ -15,6 +15,7 @@ If you do see mistakes, please do contact me at julian.mak@physics.ox.ac.uk
 - [ ] upload NEMO compilation and technical notes
 - [ ] upload python scripts / notebooks
 - [ ] create/upload hacked CDFtool commands into Python (probably only of the ones I actually use)
+- [ ] interface with XORCA and xarray things
 
 # key updates:
 * 04 Jul 2018 -- added a Read The Docs document [(Click here)](https://nemo-related.readthedocs.io/en/latest/)
