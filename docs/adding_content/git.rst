@@ -3,8 +3,57 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-git (or bitbucket) commands
-===========================
+Git commands
+============
+
+`Git <git-scm.com>`_ is s version control software. Similar software exist (e.g.
+`Mercurial <www.mercurial-scm.org >`_, `Subversion <subversion.apache.org>`_),
+but I almost exclusively use Git now for my own things (NEMO uses subversion but
+the only thing I ever do is ``svn checkout LOCATION -r VERSION``, so it's not
+really using it...) 
+
+I personally use Git for backup mostly, occasionally reverting files, as well as
+hosting websites (e.g. `here <https://julianmak.github.io/>`_ and `here
+<https://jmak-omfg.github.io/>`_). For my kind of files (mostly text files, as
+source LaTeX files, html or bits of code) I find it much more convenient and
+safer than saying using Dropbox (manual version control is too error prone for
+me). I haven't personally used Git that much in terms of collabroative work at
+the moment, so the commands below are going to be skimpy on those related
+commands.
+
+Repositories
+------------
+
+`Github <https://github.com/>`_ is my go to for making repositories, partly
+because it can render Jupyter notebooks I use a lot. Github used to only have
+public repositories, but now they have private ones too so I migrated from
+`Bitbucket <https://bitbucket.org/product/>`_. Make an account and create a
+repository so there is a target to push and pull files from.
+
+Keep the files small! Github doesn't accept anything larger than 100 Mbs I
+think. e.g. commit LaTeX source files but not necessarily the compiled version.
+
+Basic commands
+--------------
+
+The regular commands I use are:
+
+* ``git add`` registers files that Git should track and note changes
+* ``git commit -m "SOME DEEP MESSAGE"`` actually registers the changes made since last commit
+* ``git push [origin master]`` pushes the commits up to the repository
+* ``git pull`` pulles the commits from the repository to the local computer
+
+Occasionally I screw something up so I need to do:
+
+* ``git mv`` to move the files around by telling Git to still track them
+* ``git rm [--cached] FILES`` to make git to stop tracking the files (the ``--cached`` is so that the physical files are not removed; leave it out if you actually want to get rid of it)
+* ``git checkout HEAD FILES`` if I screw up the ``rm``, ``mv`` or ``git rm`` commands to recover the removed physical files. ``HEAD`` can be replaced by revision number
+* ``git log`` to check the log of commits and revision numbers
+
+[TO ADD] some branching and merging commands
+
+Access tokens
+-------------
 
 Git is phasing out password logins on terminal access, so you either
 have to do two factor authorisation (2FA), use a SSH key, or a token (there are
