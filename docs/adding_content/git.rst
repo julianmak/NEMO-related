@@ -6,7 +6,7 @@
 git (or bitbucket) commands
 ===========================
 
-[TO TIDY] Git is phasing out password logins on terminal access, so you either
+Git is phasing out password logins on terminal access, so you either
 have to do two factor authorisation (2FA), use a SSH key, or a token (there are
 others presumably). The following bits of scrap code documents how to use a
 token.
@@ -18,10 +18,9 @@ token.
 
 .. code-block:: bash
 
-  git config --global credential.helper store
-  git config --global crediential.helper 'store --timeout=31104000'
+  git config --global crediential.helper 'cache --timeout=31104000'
   
-where you can change the ``timeout`` entry to something that works for you (something large if you want to keep the token active, units are in seconds)
+where you can change the ``timeout`` entry to something that works for you (something large if you want to keep the token active for longer, units are in seconds). I tried using ``store`` on Ubuntu but it doesn't seem to do anything (``store`` saves an extra file with the credentials in) 
 
 5. go back to webpage, copy the access token, git as normal, but when it asks you for a password, paste the access token in instead
 6. if it worked properly then now you get to bypass the username and password typing until the timeout period
