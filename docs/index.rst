@@ -15,6 +15,8 @@ sections themselves.
 I can be contacted at jclmak@ust.hk regarding modifying / adding to the content
 here.
 
+* If you are here for the GEOMETRIC codes that I maintain, try this `repository <https://github.com/julianmak/GEOMETRIC_code>`_.
+
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
