@@ -130,8 +130,9 @@ the parameters ``ppkth``, ``ppacr``, ``ppdzmin`` and ``pphmax``
 .. note ::
 
   Note NEMO 4.2 seems to be using different namings and convention (`see here
-  <https://sites.nemo-ocean.io/user-guide/migration.html`_), so be careful with
-  above.
+  <https://sites.nemo-ocean.io/user-guide/migration.html>`_). As of writing
+  ``DOMAINcfg`` still reads the ``jperio`` option but separately defines the
+  ``l_[IJ]perio`` and ``ldNFold`` logical flags for NEMO to read.
 
 NESTING (AGRIF)
 ---------------
