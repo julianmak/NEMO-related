@@ -22,13 +22,13 @@ thermocline the vertical tracer diffusivity is enhanced in a sponge region to
 the north (see :cite:`Munday-et-al15`). See e.g. :cite:`Abernathey-et-al11` for
 alternative model formulations. Some model set up choices:
 
-* relatively long re-entrant zonal channel, no topography except ridge in the middle of the channel extending up to half the depth of the domain
-* fixed sinusoidal wind stress with some peak wind stress value :math:`\tau_0`
-* SST restoring (a relatively hard restoring, the ``rn_dqdt`` value in ``namelist_cfg`` has been amplified by a factor of 2)
-* linearly varying temperature profile at the surface with :math:`e`-folding depth of 1000 metres
-* linear friction
-* linear EOS with only temperature as the variable
-* sponge region to the north where vertical diffusivity is amplified by a factor of 250 from the background value of :math:`10^{-5}\ \mathrm{m}^2\ \mathrm{s}^{-1}`
+1. relatively long re-entrant zonal channel, no topography except ridge in the middle of the channel extending up to half the depth of the domain
+2. fixed sinusoidal wind stress with some peak wind stress value :math:`\tau_0`
+3. SST restoring (a relatively hard restoring, the ``rn_dqdt`` value in ``namelist_cfg`` has been amplified by a factor of 2)
+4. linearly varying temperature profile at the surface with :math:`e`-folding depth of 1000 metres
+5. linear friction
+6. linear EOS with only temperature as the variable
+7. sponge region to the north where vertical diffusivity is amplified by a factor of 250 from the background value of :math:`10^{-5}\ \mathrm{m}^2\ \mathrm{s}^{-1}`
 
 The diagram below shows an output from the 10km resolution model with biharmonic
 tracer diffusion and no eddy parameterisation, showing a rich eddying field.
@@ -73,7 +73,7 @@ grid and the ``TOOLS/DOMAINcfg`` package, as follows:
 
 1. in an external folder (e.g., ``~/Python/NEMO/UNAGI``), create the bathymetry data through a program of your choice (I did it in `Python <https://github.com/julianmak/NEMO-related/blob/master/UNAGI/gen_NEMO_UNAGI_fields.ipynb>`_) and output it as a netCDF file (e.g. ``bathy_meter.nc``)
 2. link/copy it as ``bathy_meter.nc`` (the tool requires that specific naming) into the ``TOOLS/DOMAINcfg`` that comes with NEMO 
-3. modify the ``namelist_cfg`` file accordingly for the horizontal and vertical grid spacing parameters (see :ref:`here <sec:nemo_packages>` for usage and compiling notes)
+3. modify the ``namelist_cfg`` file accordingly for the horizontal and vertical grid spacing parameters (see :ref:`here <sec:nemo_packages>` for usage and compiling notes), and the one I used for this model is given as an example in that packages page
 4. a ``domcfg.nc`` should result (if not, see ``ocean.output`` for messages), copy it back into the working folder in step 1
 5. open ``domcfg.nc`` and use those variables to create the ``state.nc`` and ``forcing.nc`` file again in the program of your choice (this is mostly to keep consistency; I did it in `Python <https://github.com/julianmak/NEMO-related/blob/master/UNAGI/gen_NEMO_UNAGI_fields.ipynb>`_)
 6. copy the ``domcfg.nc``, ``state.nc`` and ``forcing.nc`` (I prefixed them with something, e.g. ``UNAGI_domcfg_R010.nc``) and modify the ``namelist_cfg`` accordingly, e.g.

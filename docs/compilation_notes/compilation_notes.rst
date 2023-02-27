@@ -40,6 +40,7 @@ compilers I had (change these if need be):
    nemo36.rst
    nemo37.rst
    nemo40.rst
+   nemo42.rst
    Oxford_ARC.rst
    HKUST_HPC2.rst
    HKUST_HPC3.rst
