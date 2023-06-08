@@ -8,8 +8,7 @@
 GEOMETRIC outline
 =================
 
-TL;DR [27 Feb 2022]: My versions of the GEOMETRIC codes can be found in this `repository
-<https://github.com/julianmak/GEOMETRIC_code>`_. The (semi-)official one may be found `here <https://forge.nemo-ocean.eu/nemo/nemo/-/tree/128-wp2022-phys-noc-add-geometric-parameterisation>`_, with thanks to Andrew Coward at NOC-Southampton. Current version does not support the newer RK3 time-step (still needs the leap-frog), but that is on a to-do list.
+TL;DR [08 Jun 2023]: My versions of the GEOMETRIC codes for NEMO and/or MITgcm can be found in this `repository <https://github.com/julianmak/GEOMETRIC_code>`_. The official NEMO one may be found `here <https://forge.nemo-ocean.eu/nemo/nemo/-/merge_requests/202>`_, with thanks to Andrew Coward at NOC-Southampton. Current version does not support the newer RK3 time-step (still needs the leap-frog), but that is on a to-do list.
 
 **GEOMETRIC** (*Geometry and Energetics of Ocean Mesoscale Eddies and Their Rectified Impact on Climate*) is an approach to representing the unresolved turbulent eddies in ocean climate models, first derived in :cite:`Marshall-et-al12`. `David Marshall <https://www.marshallocean.net/geometric>`_'s page has an excellent outline and summary of GEOMETRIC, so this page will focus on outlining the details relating to the NEMO implementation.
 
@@ -97,16 +96,6 @@ Diffusion
 ---------
 
 The diffusion of eddy energy is through a Laplacian (cf. :cite:`EdenGreatbatch08`), done through relevant copy and pasting of code that are in other NEMO modules. The GEOMETRIC scheme is actually stable (most likely because of the upwinding scheme). The diffusion may be switched off by setting ``rn_eke_lap = 0.`` in ``namelist_cfg`` which will bypass the relevant loop in ``ldf_eke``.
-
-NEMO implementation
--------------------
-
-For details relating to the NEMO implementation (e.g. variable names, numerical treatment, :code:`namelist_cfg` file), please see the following pages.
-
-.. toctree::
-   
-   code_details.rst
-   assorted_files.rst
 
 .. bibliography:: ../refs.bib
    :filter: docname in docnames

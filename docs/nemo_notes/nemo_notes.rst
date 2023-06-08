@@ -8,8 +8,7 @@ Other NEMO notes
 
 Here you will find some of my notes relating to NEMO.
 
-If you are interested in building a model, see how I went about doing it in the
-:ref:`model building <sec:build_model>` subsection.
+If you are interested in building a model, see how I went about doing it in the :ref:`model building <sec:build_model>` subsection.
 
 .. toctree::
    :maxdepth: 2

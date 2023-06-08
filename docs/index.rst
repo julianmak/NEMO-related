@@ -6,14 +6,9 @@
 Julian's NEMO notes and codes
 =============================
 
-Homebrew collection of NEMO (:math:`\geq` v3.6) related content, existing here
-primarily to remind myself of code details. Includes compilation notes, analyses
-codes, and eventually details to some GEOMETRIC details, its implementation into
-NEMO and model building in here too. Appropriate disclaimers in the individual
-sections themselves.
+Homebrew collection of NEMO (:math:`\geq` v3.6) related content, existing here primarily to remind myself of code details. Includes compilation notes, analyses codes, and misc. other topics. Appropriate disclaimers in the individual sections themselves.
 
-I can be contacted at jclmak@ust.hk regarding modifying / adding to the content
-here.
+I can be contacted at jclmak@ust.hk regarding modifying / adding to the content here.
 
 * If you are here for the GEOMETRIC codes that I maintain, try this `repository <https://github.com/julianmak/GEOMETRIC_code>`_.
 
