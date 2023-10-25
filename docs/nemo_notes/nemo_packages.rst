@@ -39,6 +39,10 @@ like ``${MODEL}_${RES_TMESTAMP}_restart_0000.nc`` (e.g. ``mesh_mask_00??.nc``,
 files to combine (e.g. if we use 96 cores then we get ``mesh_mask_0000.nc`` to
 ``mesh_mask_0095.nc``, and we should do ``export NUM_CPU=96``).
 
+.. note ::
+
+  In NEMO 4.0 versions an error may come up with `undefined reference to iarg_` and `getarg_`. This seems to arise from `src/rebuild_nemo.f90` where both `iarg` and `getarg` are defined as `extrinsic`. With `gfortran` this can be fixed by simply changing the attribute to `intrinsic`.
+
 SECTIONS_DIADCT
 ---------------
 
