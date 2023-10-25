@@ -41,7 +41,7 @@ files to combine (e.g. if we use 96 cores then we get ``mesh_mask_0000.nc`` to
 
 .. note ::
 
-  In NEMO 4.0 versions an error may come up with `undefined reference to iarg_` and `getarg_`. This seems to arise from `src/rebuild_nemo.f90` where both `iarg` and `getarg` are defined as `extrinsic`. With `gfortran` this can be fixed by simply changing the attribute to `intrinsic`.
+  In NEMO 4.0 versions an error may come up with ``undefined reference to iarg_`` and ``getarg_``. This seems to arise from ``src/rebuild_nemo.f90`` where both ``iarg`` and ``getarg`` are defined as ``extrinsic``. With ``gfortran`` this seems to be fixed by simply changing the attribute to ``intrinsic``.
 
 SECTIONS_DIADCT
 ---------------
