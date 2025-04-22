@@ -3,81 +3,33 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-.. _sec:pyCDFTOOLS:
+.. _sec:analysis tools:
 
-pyCDFTOOLS
-==========
+analysis tools
+==============
 
-For various reasons (mostly personal preference and forcing myself to write in
-Python) I made a translation of sorts of `CDFTOOLS
-<https://github.com/meom-group/CDFTOOLS>`_ in Python. pyCDFTOOLS I think is:
+For various reasons (mostly personal preference and forcing myself to write in Python) I previously attemped to make a translation of sorts of `CDFTOOLS <https://github.com/meom-group/CDFTOOLS>`_ in Python, and it ended up being called `pyCDFTOOLS <https://github.com/julianmak/pyCDFTOOLS>`. This will probably be renamed for reasons detailed later. [22 Apr 2025]
+
+.. note ::
+
+  There is one as part of this repository, but probably don't use that anymore, as the one that will be `here <https://github.com/julianmak/pyCDFTOOLS>` and/or one that will replace it is done in a more modern way.
+  
+There is some talk of a plan for the package. But in the meantime, the idea is that the python version would be:
 
 * slightly more flexible, e.g., no need to recompile if variable name changes between files
 * saves on the creation and reading of files
 * everything done within Python, rather than Fortran and MATLAB say
 * marginally more up-to-date, e.g. dealings with TEOS-10 equation of state
 
-On the other hand, it is
+On the other hand, it will
 
-* not as complete, because I only translated ones that I needed (see `here <https://github.com/julianmak/NEMO-related/tree/master/pyCDFTOOLS>`_ for list)...
+* not NEMO code compliant (CDFTOOLS is designed to conform to NEMO code conventions, hence the eventual renaming)
+* not be as complete, because I only translate ones that I needed (and to be honest there are a chunk of CDFTOOL routines that are not arguably a bit niche...)
 * not as established and probably slightly error prone
-* not as fast (though things that I could not vectorise I used JIT to speed up the looping)
-* not NEMO code compliant (CDFTOOLS is designed to conform to NEMO code conventions)
 
-An additional criticism I have is that I wrote pyCDFTOOLS more like
-Fortran/MATLAB and not making full use of the Python functionalities (e.g.,
-Panda and so forth). I have some idea how I might get it to work but watch this
-space...
+An additional criticism I have is that I write my Python code more like Fortran/MATLAB code. This one is somewhat by design, because I have in mind a set of tools that is more like a calculator, rather than imbuing an object with all the subfunctions etc.
 
-The routine naming conventions of the programs are basically the same as
-CDFTOOLS (see `MEOM page <http://meom-group.github.io/doc/CDFTOOLS/>`_). All
-codes with the prefix ``cdf`` are based on CDFTOOLS; all errors are entirely
-mine (any things I did change are commented in the code).
-
-Grab it with:
-
-.. code-block:: bash
-
-  git clone https://github.com/julianmak/NEMO-related
-  
-Some slightly more configuration/model specific Python scripts and notebooks are
-in other folders (e.g., ``GYRE`` and ``ORCA``). I tend to just do
-
-.. code-block:: bash
-
-  cd GYRE
-  rsync -arv ../pyCDFTOOLS .
-  
-which then means the scripts and notebooks within the folder have access to the
-module, and it separates out a version that I do testing on.
-
-CDFTOOLS itself depends on the following packages (the things I think that come
-as standard are omitted):
-
-* numba (for JIT to speed up loops)
-* numpy (for tools)
-* netCDF4 (for reading)
-* scipy (for the occasional times when a MATLAB file is read)
-
-The configuration specific programs depend additionally on Matplotlib and a
-whole load of other ones for the ORCA configuration; see the relevant pages. I
-installed most of the things through `Anaconda
-<https://www.anaconda.com/download/#linux>`_; see the :ref:`Python <sec:python>`
-page here for my notes on these.
-
-Use these scripts at your own risk and feel free to modify them (rights etc. as
-stated in the license and in line with the CDFTOOLS one). For comparison
-purposes you may also want to grab CDFTOOLS to compare results (see the
-`CDFTOOLS <https://github.com/meom-group/CDFTOOLS>`_ page):
-
-.. code-block:: bash
-
-  git clone https://github.com/meom-group/CDFTOOLS
-  
-.. note::
-  
-  The programs I have uploaded I was satisfied enough with the tests I have
-  done, but don't just take my word for it :-)
+Updates may come on here at some point.
 
 
 
