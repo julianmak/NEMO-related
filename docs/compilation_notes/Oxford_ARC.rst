@@ -8,12 +8,9 @@
 Oxford ARC compilation
 ======================
 
-The build uses NEMO 3.7/4.0 + XIOS 2.0 as the example. For installing other
-versions, extrapolate from the other notes.
+The build uses NEMO 3.7/4.0 + XIOS 2.0 as the example. For installing other versions, extrapolate from the other notes.
 
-Annoyingly (!) everything basically works out of the box because all the
-dependency modules have been built already! This has not been the usual
-experience I have with XIOS and NEMO...
+Annoyingly (!) everything basically works out of the box because all the dependency modules have been built already! This has not been the usual experience I have with XIOS and NEMO...
 
 Building NEMO and XIOS
 ----------------------
@@ -24,17 +21,13 @@ Log on first using:
 
   ssh [-X] phys????@arcus-b.arc.ox.ac.uk
   
-On first login doing ``module list`` should show no modules; if there are then
-might want to do ``module purge`` just for safety. Doing ``module avail`` shows
-the list of modules available. I'm going to use the ``gcc`` one, and by doing
+On first login doing ``module list`` should show no modules; if there are then might want to do ``module purge`` just for safety. Doing ``module avail`` shows the list of modules available. I'm going to use the ``gcc`` one, and by doing
 
 .. code-block:: bash
 
   module load /netcdf-parallel/4.4__mvapich2__gcc
   
-this loads NetCDF4 as well as its dependencies (which should be HDF5, gcc4.9.2
-and the relevant mvapich); I added that line to ``~/.bashrc`` so it loads from
-now on when logging in. Then I did
+this loads NetCDF4 as well as its dependencies (which should be HDF5, gcc4.9.2 and the relevant mvapich); I added that line to ``~/.bashrc`` so it loads from now on when logging in. Then I did
 
 .. code-block:: bash
 
@@ -73,11 +66,7 @@ and the other two as default. Running
   cd ../
   ./make_xios --full --prod --arch HKUST_HPC2 -j4 |& tee compile_log.txt
 
-seems to do the job. I think I did go into ``bld.cfg`` and changed
-``src_netcdf`` to ``src_netcdf4`` for safety; don't remember needing this in
-ARCHER (did need it when doing a local compilation). If that doesn't work
-consider adding ``CPPFLAGS`` and ``LDFLAGS`` before the ``./make_xios`` command
-to force the program to look in the specified place.
+seems to do the job. I think I did go into ``bld.cfg`` and changed ``src_netcdf`` to ``src_netcdf4`` for safety; don't remember needing this in ARCHER (did need it when doing a local compilation). If that doesn't work consider adding ``CPPFLAGS`` and ``LDFLAGS`` before the ``./make_xios`` command to force the program to look in the specified place.
 
 NEMO is then built as follows:
 
@@ -158,30 +147,18 @@ The system uses SLURM and the key commands are
 * ``sinfo``: check status of queues available
 * ``squeue -u $USER``: check job info for ``$USER``
 
-``sbatch`` could be used with arguments but I am going to have everything within
-``submit_nemo`` itself. Check balance and budget account names with the
-``mybalance`` command. Running ``sinfo`` shows the queue available is called
-``compute``. One thing to note is that ARC has 16 cores per node and this is
-reflected in the core/node request numbers.
+``sbatch`` could be used with arguments but I am going to have everything within ``submit_nemo`` itself. Check balance and budget account names with the ``mybalance`` command. Running ``sinfo`` shows the queue available is called ``compute``. One thing to note is that ARC has 16 cores per node and this is reflected in the core/node request numbers.
 
-Oxford ARC does have parallel NetCDF so I can use XIOS in detached mode. To do
-this I link ``xios_server.exe`` to the folder:
+Oxford ARC does have parallel NetCDF so I can use XIOS in detached mode. To do this I link ``xios_server.exe`` to the folder:
 
 .. code-block:: bash
 
   cd GYRE_testing/EXP00
   ln -s $DATA/XIOS/xios2.0/bin/xios_server.exe .
   
-Modify ``iodef.xml`` so that the user server boolean is ``true``. Additionally I
-go into ``file_def_nemo.xml`` and swap out ``multiple_file`` at the top header
-to ``one_file``, which then spits out a single NetCDF file. This however only
-works for the diagnostic files but not the restart files, so recombining the
-restart files we are going to call ``TOOLS/REBUILD_NEMO`` in the post-processing
-script.
+Modify ``iodef.xml`` so that the user server boolean is ``true``. Additionally I go into ``file_def_nemo.xml`` and swap out ``multiple_file`` at the top header to ``one_file``, which then spits out a single NetCDF file. This however only works for the diagnostic files but not the restart files, so recombining the restart files we are going to call ``TOOLS/REBUILD_NEMO`` in the post-processing script.
 
-The generic submission script I use (based on the one given on the `NOCL
-page <https://nemo-nocl.readthedocs.io/en/latest/work_env/mobius.html>`_) is as
-follows (I have some ASCII art in there because I got bored at some point):
+The generic submission script I use (based on the one given on the `NOCL page <https://nemo-nocl.readthedocs.io/en/latest/work_env/mobius.html>`_) is as follows (I have some ASCII art in there because I got bored at some point):
 
 .. code-block:: bash
   
@@ -249,14 +226,9 @@ follows (I have some ASCII art in there because I got bored at some point):
     exit
   fi
 
-The ratio of ``XIOScore`` to ``NEMOcore`` I never found to lead to major
-differences for the size of runs I do (not larger than 300 cores); vaguely
-remember reading somewhere that ``XIOScore`` hovering between 5 to 10 per cent
-of ``NEMOcore`` is ok.
+The ratio of ``XIOScore`` to ``NEMOcore`` I never found to lead to major differences for the size of runs I do (not larger than 300 cores); vaguely remember reading somewhere that ``XIOScore`` hovering between 5 to 10 per cent of ``NEMOcore`` is ok.
 
-The following post-processing script requires a few prepping (I make no
-apologies for the bad code and the script being fickle; feel free to modify as
-you see fit):
+The following post-processing script requires a few prepping (I make no apologies for the bad code and the script being fickle; feel free to modify as you see fit):
 
 * copying the ``nn_date0`` line into ``namelist_cfg`` from say ``namelist_ref`` if it doesn't exist already, because the time-stamps are modified by modifying ``nn_date0``
 * do a search in ``namelist_cfg`` and make sure there is only ever one mention of ``nn_date0`` (otherwise it grabs the wrong lines)
@@ -461,6 +433,4 @@ The ``postprocess.sh`` I cooked up is here:
 
   exit
   
-The output recombination steps have bene commented out because ARC does have
-parallel NetCDF4 and so the ``one_file`` option in ``field_def_nemo.xml``
-already takes care of the outputs.
+The output recombination steps have bene commented out because ARC does have parallel NetCDF4 and so the ``one_file`` option in ``field_def_nemo.xml`` already takes care of the outputs.

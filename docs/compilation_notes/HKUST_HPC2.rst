@@ -3,40 +3,28 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
    
-.. _sec:hkust:
+.. _sec:hkusthpc2:
 
 HKUST HPC2 compilation
 ======================
 
-The build uses NEMO 3.7/4.0 + XIOS 2.0 as the example. For installing other
-versions, extrapolate from the other notes.
+The build uses NEMO 3.7/4.0 + XIOS 2.0 as the example. For installing other versions, extrapolate from the other notes.
 
-HKUST HPC2 is a cluster with SLURM. Modules are loaded on an per basis via
-sourcing some shell scripts. The following is going to use ``gcc`` and
-``openmpi``, but in theory the corresponding intel compilers should work too
-(not tested):
+HKUST HPC2 is a cluster with SLURM. Modules are loaded on an per basis via sourcing some shell scripts. The following is going to use ``gcc`` and ``openmpi``, but in theory the corresponding intel compilers should work too (not tested):
 
 .. code-block:: bash
 
   source /usr/local/setup/gcc-g++-4.9.2.sh
   source /usr/local/setup/openmpi-2.0.0.sh
 
-The notes are **(psuedo)-chronological** (complete with errors) rather than
-the final product to highlight some pitfalls and workarounds to do with HDF5 and
-NetCDF4 compatibility (the system itself does not have parallel HDF5 or NetCDF4
-and it was a mystery which compiler the libraries were built with).
+The notes are **(psuedo)-chronological** (complete with errors) rather than the final product to highlight some pitfalls and workarounds to do with HDF5 and NetCDF4 compatibility (the system itself does not have parallel HDF5 or NetCDF4 and it was a mystery which compiler the libraries were built with).
 
 XIOS (1st try that doesn't quite work)
 --------------------------------------
 
 .. warning::
 
-  Doing whatever is detailed here in this subsection will get XIOS compiled, but
-  then it turns out when compiling NEMO that the system NetCDF4 is incompatible
-  with the chosen compiler (I still have no idea which compiler was used for the
-  system NetCDF4). The final working solution is to compile (a much more
-  up-to-date) HDF5 and NetCDF4 separately; this means the final
-  ``arch-HKUST_HPC2.env`` will be different.
+  Doing whatever is detailed here in this subsection will get XIOS compiled, but then it turns out when compiling NEMO that the system NetCDF4 is incompatible with the chosen compiler (I still have no idea which compiler was used for the system NetCDF4). The final working solution is to compile (a much more up-to-date) HDF5 and NetCDF4 separately; this means the final ``arch-HKUST_HPC2.env`` will be different.
 
 I did the usual things of downloading XIOS and copying the arch files in
 
@@ -51,8 +39,7 @@ I did the usual things of downloading XIOS and copying the arch files in
   cp arch-GCC_LINUX.fcm arch-HKUST_HPC2.fcm
   cp arch-GCC_LINUX.path arch-HKUST_HPC2.path
   
-HDF5 and NetCDF4 is not included in a load so it is there by default. Doing for
-example ``locate libnetcdf`` tells me that I should have the following:
+HDF5 and NetCDF4 is not included in a load so it is there by default. Doing for example ``locate libnetcdf`` tells me that I should have the following:
 
 .. code-block:: none
 
@@ -84,19 +71,14 @@ I must have done something a bit weird to the ``arch-HKUST_HPC2.path``:
   HDF5_LIBDIR="-L$HDF5_LIB_DIR"
   HDF5_LIB="-lhdf5_hl -lhdf5 -lz"
 
-Not sure where I got the ``-Bstatic`` flag from initially (maybe from the ARCHER
-compilation). If that flag is there when doing the compiling then I get the
-error
+Not sure where I got the ``-Bstatic`` flag from initially (maybe from the ARCHER compilation). If that flag is there when doing the compiling then I get the error
 
 .. code-block:: bash
 
   ### ERROR ###
   linker error: ld cannot locate lnetcdf etc.
   
-but doing something like ``ld [-L/usr/lib64] -lnetcdf --verbose`` or using
-whatever the ``ld`` is actually called because of the modified ``$PATH`` clearly
-shows success. The same happens when the intel compilers are used. Anyway, using
-the following (the system had ``gmake`` so I left it; ``make`` should work too)
+but doing something like ``ld [-L/usr/lib64] -lnetcdf --verbose`` or using whatever the ``ld`` is actually called because of the modified ``$PATH`` clearly shows success. The same happens when the intel compilers are used. Anyway, using the following (the system had ``gmake`` so I left it; ``make`` should work too)
 
 .. code-block:: none
 
@@ -134,18 +116,14 @@ followed by
   cd ../
   [CPPFLAGS=-I/usr/include LDFLAGS=-L/usr/lib64] ./make_xios --full --prod --arch HKUST_HPC2 -j4 |& tee compile_log.txt
 
-seems to do the job. I think I did go into ``bld.cfg`` and changed
-``src_netcdf`` to ``src_netcdf4`` for safety; don't remember needing this in
-ARCHER (did need it when doing a local compilation).
+seems to do the job. I think I did go into ``bld.cfg`` and changed ``src_netcdf`` to ``src_netcdf4`` for safety; don't remember needing this in ARCHER (did need it when doing a local compilation).
 
 NEMO (1st try that doesn't quite work)
 --------------------------------------
 
 .. warning::
 
-  Again this doesn't quite work because of NetCDF4 Fortran compiler
-  compatibility. The final working ``arch-HKUST_HPC2.fcm`` has a modified
-  ``%NCDF_INC`` and ``%NCDF_LIB``.
+  Again this doesn't quite work because of NetCDF4 Fortran compiler compatibility. The final working ``arch-HKUST_HPC2.fcm`` has a modified ``%NCDF_INC`` and ``%NCDF_LIB``.
 
 As advertised, when doing the following
 
@@ -209,27 +187,17 @@ When building with
   nano GYRE_testing/cpp_GYRE_testing.fcm # (have key_top -> key_nosignedzero)
   ./makenemo -n GYRE_tesitng -m HKUST_HPC2 -j4
   
-throws up the error that NetCDF4 being called was built with a different
-gfortran compiler. So the workaround here is build the dependencies
-separately...
+throws up the error that NetCDF4 being called was built with a different gfortran compiler. So the workaround here is build the dependencies separately...
 
 zlib, HDF5 and NetCDF4
 ----------------------
 
-I have not figured out how to get the parallel builds of HDF5 and NetCDF4 done
-successfully. Without it NEMO still works fine it just means each processor
-spits out the data associated with the tile it is assigned to: the ``one_file``
-option in ``file_def_nemo.xml`` doesn't work without parallel NetCDF4 and only
-``multiple_file`` is allowed (it will crash the first time step it tries to
-write). The workaround here is to at the post-processing stage rely on the NEMO
-``TOOLS/REBUILD_NEMO`` to recombine the files if required.
+I have not figured out how to get the parallel builds of HDF5 and NetCDF4 done successfully. Without it NEMO still works fine it just means each processor spits out the data associated with the tile it is assigned to: the ``one_file`` option in ``file_def_nemo.xml`` doesn't work without parallel NetCDF4 and only ``multiple_file`` is allowed (it will crash the first time step it tries to write). The workaround here is to at the post-processing stage rely on the NEMO ``TOOLS/REBUILD_NEMO`` to recombine the files if required.
 
-I built everything as follows (see :ref:`here <sec:other-pack>` for more details
-on the commands maybe):
+I built everything as follows (see :ref:`here <sec:other-pack>` for more details on the commands maybe):
 
 .. warning::
-  ``LD_LIBRARY_FLAG`` definitely does not point to ``/usr/lib64`` now, though I
-  don't remember if I strictly needed to set it to ``$PI_HOME/custom_libs/lib``
+  ``LD_LIBRARY_FLAG`` definitely does not point to ``/usr/lib64`` now, though I don't remember if I strictly needed to set it to ``$PI_HOME/custom_libs/lib``
 
 .. code-block:: bash
 
@@ -278,14 +246,12 @@ on the commands maybe):
   make -j 4
   make check install
   
-My written notes says I made sure ``LD_LIBRARY_PATH`` pointed to
-``$PI_HOME/custom_libs/libs`` for the NetCDF4-fortran ``./configure`` part.
+My written notes says I made sure ``LD_LIBRARY_PATH`` pointed to ``$PI_HOME/custom_libs/libs`` for the NetCDF4-fortran ``./configure`` part.
 
 Building XIOS and NEMO again
 ----------------------------
 
-I rebuilt XIOS after changing ``arch-HKUST_HPC2.env`` to (probably added to
-``LD_LIBRARY_PATH``):
+I rebuilt XIOS after changing ``arch-HKUST_HPC2.env`` to (probably added to ``LD_LIBRARY_PATH``):
 
 .. code-block:: none
 
@@ -313,8 +279,7 @@ following (starting from the ``CONFIG`` folder):
   cd ../TOOLS
   ./maketools -n REBUILD_NEMO -m HKUST_HPC2
   
-which results in a ``TOOLS/REBUILD_NEMO/rebuild_nemo.exe`` that I am going to
-use in my post-processing script later.
+which results in a ``TOOLS/REBUILD_NEMO/rebuild_nemo.exe`` that I am going to use in my post-processing script later.
 
 Running NEMO on the HPC2
 ------------------------
@@ -326,11 +291,7 @@ The system uses SLURM and the key commands are
 * ``sinfo``: check status of queues available
 * ``squeue -u $USER``: check job info for ``$USER``
 
-``sbatch`` could be used with arguments but I am going to have everything within
-``submit_nemo`` itself. The generic one I use (based on the one given on the
-`NOCL page <https://nemo-nocl.readthedocs.io/en/latest/work_env/mobius.html>`_)
-is as follows (I have some ASCII art in there because I got bored at some
-point):
+``sbatch`` could be used with arguments but I am going to have everything within ``submit_nemo`` itself. The generic one I use (based on the one given on the `NOCL page <https://nemo-nocl.readthedocs.io/en/latest/work_env/mobius.html>`_) is as follows (I have some ASCII art in there because I got bored at some point):
 
 .. code-block:: bash
 
@@ -399,14 +360,9 @@ point):
     exit
   fi
 
-Here because I am not using ``xios_server.exe`` I don't strictly need the ``-n
-24`` after ``mpirun`` (it will then just use however many cores that's given in
-``#SBATCH -n``). Maybe see the :ref:`Oxford ARC <sec:oxford>` one to see how it
-might work when ``xios_server.exe`` is run alongside NEMO to do the I/O . 
+Here because I am not using ``xios_server.exe`` I don't strictly need the ``-n 24`` after ``mpirun`` (it will then just use however many cores that's given in ``#SBATCH -n``). Maybe see the :ref:`Oxford ARC <sec:oxford>` one to see how it might work when ``xios_server.exe`` is run alongside NEMO to do the I/O . 
 
-The following post-processing script requires a few prepping (I make no
-apologies for the bad code and the script being fickle; feel free to modify as
-you see fit):
+The following post-processing script requires a few prepping (I make no apologies for the bad code and the script being fickle; feel free to modify as you see fit):
 
 * copying the ``nn_date0`` line into ``namelist_cfg`` from say ``namelist_ref`` if it doesn't exist already, because the time-stamps are modified by modifying ``nn_date0``
 * do a search in ``namelist_cfg`` and make sure there is only ever one mention of ``nn_date0`` (otherwise it grabs the wrong lines)
@@ -611,9 +567,7 @@ The ``postprocess.sh`` I cooked up is here:
 
   exit
 
-A chunk of the output recombination procedures are not required if the
-``one_file`` option in ``field_def_nemo.xml`` is enabled and possible (requires
-parallel NetCDF4 which I didn't bother building here).
+A chunk of the output recombination procedures are not required if the ``one_file`` option in ``field_def_nemo.xml`` is enabled and possible (requires parallel NetCDF4 which I didn't bother building here).
 
 
 

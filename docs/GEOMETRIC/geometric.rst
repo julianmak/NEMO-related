@@ -29,7 +29,7 @@ The current NEMO implementation considers an eddy energy field that varies in lo
    \lambda \int E\; \mathrm{d}z +
    \nu_E \nabla^2 \int E\; \mathrm{d}z,
    
-(respecively, the time-evolution, advection, source, dissipation and diffusion of eddy energy), with :math:`\kappa_{\rm gm}` calculated as
+(respectively, the time-evolution, advection, source, dissipation and diffusion of eddy energy), with :math:`\kappa_{\rm gm}` calculated as
 
 .. math::
    \kappa_{\rm gm} = \alpha \frac{\int E\; \mathrm{d}z}{\int \Gamma (M^2 / N)\; \mathrm{d}z} \Gamma(z).

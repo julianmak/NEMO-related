@@ -3,39 +3,25 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
    
-.. _sec:hkust:
+.. _sec:hkusthpc3:
 
 HKUST HPC3 compilation
 ======================
 
-The build uses NEMO 3.7/4.0 + XIOS 2.0 as the example. For installing other
-versions, extrapolate from the other notes.
+The build uses NEMO 3.7/4.0 + XIOS 2.0 as the example. For installing other versions, extrapolate from the other notes.
 
-HKUST HPC3 is a cluster with SLURM. The usual ``module
-load/swap/purge/unload/list/avail`` works here, and the system so far is built
-by default with ``gcc8.4`` and the relevant netCDF4 and HDF5 libraries (serial
-and parallel version).
+HKUST HPC3 is a cluster with SLURM. The usual ``module load/swap/purge/unload/list/avail`` works here, and the system so far is built by default with ``gcc8.4`` and the relevant netCDF4 and HDF5 libraries (serial and parallel version).
 
 Compilers
 ---------
 
 .. note::
 
-  HPC3 now has the gcc5.4 compilers at ``module swap gnu/8.4.0 gnu/5.4.0``. MPI
-  bindings not available so those still need to be built.
+  HPC3 now has the gcc5.4 compilers at ``module swap gnu/8.4.0 gnu/5.4.0``. MPI bindings not available so those still need to be built.
 
-So the first problem is compilers for XIOS. As far as I can tell (I am happy to
-be wrong), as of writing, XIOS doesn't play well with ``gcc`` versions above 6
-and so using the system compilers will fail, and indeed building XIOS as per
-usual hits the c++ standard and some routine naming errors (my understanding is
-that the newer versions of gcc are more strict with naming). So I decided to
-build the compilers myself (and with it all the other libraries just for
-safety). See the :ref:`packages <sec:other-pack>` page.
+So the first problem is compilers for XIOS. As far as I can tell (I am happy to be wrong), as of writing, XIOS doesn't play well with ``gcc`` versions above 6 and so using the system compilers will fail, and indeed building XIOS as per usual hits the c++ standard and some routine naming errors (my understanding is that the newer versions of gcc are more strict with naming). So I decided to build the compilers myself (and with it all the other libraries just for safety). See the :ref:`packages <sec:other-pack>` page.
 
-After a few hours (it takes that long for a bootstrap build) I have ``gcc5.4``
-in ``/scratch/PI/jclmak/custom_libs/gcc5.4/``. I proceeded to relogin, unload
-``gcc8.4`` and building the libraries into the same target folder for safety
-(needed to build ``m4``). I have a specific environment file that includes
+After a few hours (it takes that long for a bootstrap build) I have ``gcc5.4`` in ``/scratch/PI/jclmak/custom_libs/gcc5.4/``. I proceeded to relogin, unload ``gcc8.4`` and building the libraries into the same target folder for safety (needed to build ``m4``). I have a specific environment file that includes
 
 .. code-block:: none
 
@@ -57,8 +43,7 @@ I did the usual things of downloading XIOS and copying the arch files in
   cp arch-GCC_LINUX.fcm arch-HKUST_HPC3.fcm
   cp arch-GCC_LINUX.path arch-HKUST_HPC3.path
   
-Since I built all the libraries separately the arch files look like the
-following:
+Since I built all the libraries separately the arch files look like the following:
 
 .. code-block:: none
 
@@ -110,16 +95,14 @@ following:
   %FPP            cpp -P
   %MAKE           make
 
-The ``-D_GLIBCXX_USE_CXX11_ABI=0`` is needed because we are using ``gcc5.4``.
-Then I ran
+The ``-D_GLIBCXX_USE_CXX11_ABI=0`` is needed because we are using ``gcc5.4``. Then I ran
 
 .. code-block:: bash
 
   cd ../
   [CPPFLAGS=-I/usr/include LDFLAGS=-L/usr/lib64] ./make_xios --full --prod --arch HKUST_HPC3 |& tee compile_log.txt
 
-I think I did go into ``bld.cfg`` and changed ``src_netcdf`` to ``src_netcdf4``
-for safety.
+I think I did go into ``bld.cfg`` and changed ``src_netcdf`` to ``src_netcdf4`` for safety.
 
 NEMO
 ----
@@ -186,18 +169,16 @@ and build with
   nano GYRE_testing/cpp_GYRE_testing.fcm # (have key_top -> key_nosignedzero)
   ./makenemo -n GYRE_tesitng -m HKUST_HPC3 -j4
   
-I'm going to make use of the NEMO ``TOOLS/REBUILD_NEMO`` to have a single NetCDF
-file so I additionally do the following (starting from the ``CONFIG`` folder):
+I'm going to make use of the NEMO ``TOOLS/REBUILD_NEMO`` to have a single NetCDF file so I additionally do the following (starting from the ``CONFIG`` folder):
 
 .. code-block:: bash
 
   cd ../TOOLS
   ./maketools -n REBUILD_NEMO -m HKUST_HPC2
   
-which results in a ``TOOLS/REBUILD_NEMO/rebuild_nemo.exe`` that I am going to
-use in my post-processing script later.
+which results in a ``TOOLS/REBUILD_NEMO/rebuild_nemo.exe`` that I am going to use in my post-processing script later.
 
-Running NEMO on the HPC2
+Running NEMO on the HPC3
 ------------------------
 
 The system uses SLURM and the key commands are
@@ -207,11 +188,7 @@ The system uses SLURM and the key commands are
 * ``sinfo``: check status of queues available
 * ``squeue -u $USER``: check job info for ``$USER``
 
-``sbatch`` could be used with arguments but I am going to have everything within
-``submit_nemo`` itself. The generic one I use (based on the one given on the
-`NOCL page <https://nemo-nocl.readthedocs.io/en/latest/work_env/mobius.html>`_)
-is as follows (I have some ASCII art in there because I got bored at some
-point):
+``sbatch`` could be used with arguments but I am going to have everything within ``submit_nemo`` itself. The generic one I use (based on the one given on the `NOCL page <https://nemo-nocl.readthedocs.io/en/latest/work_env/mobius.html>`_) is as follows (I have some ASCII art in there because I got bored at some point):
 
 .. code-block:: bash
 
@@ -281,14 +258,9 @@ point):
     exit
   fi
 
-Here because I am not using ``xios_server.exe`` I don't strictly need the ``-n
-40`` after ``mpirun`` (it will then just use however many cores that's given in
-``#SBATCH -n``). Maybe see the :ref:`Oxford ARC <sec:oxford>` one to see how it
-might work when ``xios_server.exe`` is run alongside NEMO to do the I/O. 
+Here because I am not using ``xios_server.exe`` I don't strictly need the ``-n 40`` after ``mpirun`` (it will then just use however many cores that's given in ``#SBATCH -n``). Maybe see the :ref:`Oxford ARC <sec:oxford>` one to see how it might work when ``xios_server.exe`` is run alongside NEMO to do the I/O. 
 
-The following post-processing script requires a few prepping (I make no
-apologies for the bad code and the script being fickle; feel free to modify as
-you see fit):
+The following post-processing script requires a few prepping (I make no apologies for the bad code and the script being fickle; feel free to modify as you see fit):
 
 * copying the ``nn_date0`` line into ``namelist_cfg`` from say ``namelist_ref`` if it doesn't exist already, because the time-stamps are modified by modifying ``nn_date0``
 * do a search in ``namelist_cfg`` and make sure there is only ever one mention of ``nn_date0`` (otherwise it grabs the wrong lines)
@@ -493,9 +465,7 @@ The ``postprocess.sh`` I cooked up is here:
 
   exit
 
-A chunk of the output recombination procedures are not required if the
-``one_file`` option in ``field_def_nemo.xml`` is enabled and possible (requires
-parallel NetCDF4 which I didn't bother building here).
+A chunk of the output recombination procedures are not required if the ``one_file`` option in ``field_def_nemo.xml`` is enabled and possible (requires parallel NetCDF4 which I didn't bother building here).
 
 
 

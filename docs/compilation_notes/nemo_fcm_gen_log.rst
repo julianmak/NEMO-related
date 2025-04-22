@@ -8,13 +8,9 @@
 detailed log of generating arch-gfortran_local.fcm
 ==================================================
 
-Log is longer than it needs to be to highlight what some of the errors that
-could arise looks like. The following is based what exists in the fcm file that
-works on ARCHER (e.g. `NOCL ARCHER guide
-<https://nemo-nocl.readthedocs.io/en/latest/work_env/archer.html>`_). 
+Log is longer than it needs to be to highlight what some of the errors that could arise looks like. The following is based what exists in the fcm file that works on ARCHER (e.g. `NOCL ARCHER guide <https://nemo-nocl.readthedocs.io/en/latest/work_env/archer.html>`_). 
 
-Starting with ``arch-gfortran_local.fcm`` as copied from
-``OLD/arch-gfortran_linux.fcm``:
+Starting with ``arch-gfortran_local.fcm`` as copied from ``OLD/arch-gfortran_linux.fcm``:
 
 .. code-block :: none
 
@@ -32,8 +28,7 @@ Starting with ``arch-gfortran_local.fcm`` as copied from
   %USER_INC            %NCDF_INC
   %USER_LIB            %NCDF_LIB
 
-To be consistent with where I installed NetCDF4 and what compilers I am using,
-the above is modified to the following:
+To be consistent with where I installed NetCDF4 and what compilers I am using, the above is modified to the following:
 
 .. code-block :: none
 
@@ -69,9 +64,7 @@ C pre-processing is not defined, so add in the following keys:
   %CPP	               cpp-4.9
   %CPPFLAGS            -P -traditional
   
-``cpp-4.9`` is my C-preprocessing associated with ``gcc4.9``; do something like
-``which cpp-4.9`` to find if it is the right binary to call. (Note C++ appears
-as ``g++`` or ``mpicxx`` for example). 
+``cpp-4.9`` is my C-preprocessing associated with ``gcc4.9``; do something like ``which cpp-4.9`` to find if it is the right binary to call. (Note C++ appears as ``g++`` or ``mpicxx`` for example). 
 
 Fortran talking with CPP
 ------------------------
@@ -86,8 +79,7 @@ Compile with ``./makenemo -n GYRE_testing clean_config && ./makenemo -r GYRE -n 
    1
   Error: Invalid character in name at (1)
 
-This is saying that the Fortran interpreter is not recognising the formatting.
-This is fixed by adding a ``-cpp`` flag to the Fortran compiler:
+This is saying that the Fortran interpreter is not recognising the formatting. This is fixed by adding a ``-cpp`` flag to the Fortran compiler:
 
 .. code-block :: none
 
@@ -104,9 +96,7 @@ Same again, gets rid of that error but then something like the below appears:
 
   4,num_fields), zfoldwk(jpi,4,num_fields), znorthgloio(jpi,4,num_fields,jpni
 
-This indicates that the line is too short (there is a default limit on how many
-characters a line should have in Fortran). Fix this by adding
-``-ffree-line-length-none``:
+This indicates that the line is too short (there is a default limit on how many characters a line should have in Fortran). Fix this by adding ``-ffree-line-length-none``:
 
 .. code-block :: none
   
@@ -151,12 +141,7 @@ Passes the XIOS flag and now something like this pops up:
   /home/julian/testing/nemo-6800/xios-703/xios-1.0/lib/libxios.a(operator_expr.o):(.eh_frame+0x5a7): undefined reference to `__gxx_personality_v0'
   collect2: error: ld returned 1 exit status
   
-This is one where having a log is useful. A whole load of error pops up to say
-the C++ files are not being interpreted, to do with a linker error (probably
-easiest to scroll down from top rather than up from bottom). Normally one might
-expect that adding the ``-lstdc++`` flag to ``%LDFLAGS`` would work but it
-doesn't for whatever reason. The ``-lstdc++`` flag seems to need to go **right
-at the end** of the command line, which meant I did the following:
+This is one where having a log is useful. A whole load of error pops up to say the C++ files are not being interpreted, to do with a linker error (probably easiest to scroll down from top rather than up from bottom). Normally one might expect that adding the ``-lstdc++`` flag to ``%LDFLAGS`` would work but it doesn't for whatever reason. The ``-lstdc++`` flag seems to need to go **right at the end** of the command line, which meant I did the following:
 
 .. code-block :: none
 
@@ -167,9 +152,7 @@ If someone could explain to me why this works do send me an e-mail!
 MPI errors
 ----------
 
-Turns out actually there are two errors that get thrown up previously, with the
-linker error dominating the output. Getting with of C++ one gives something like
-the following errors:
+Turns out actually there are two errors that get thrown up previously, with the linker error dominating the output. Getting with of C++ one gives something like the following errors:
 
 .. code-block :: none
 
@@ -192,8 +175,7 @@ where ``mpif90`` is my binding of ``gfortran-4.9`` to MPI.
 NetCDF errors
 -------------
 
-The above procedure gets rid of the MPI errors but throws up a whole load of
-NetCDF errors that look like the following:
+The above procedure gets rid of the MPI errors but throws up a whole load of NetCDF errors that look like the following:
 
 .. code-block :: none
 
@@ -203,8 +185,7 @@ NetCDF errors that look like the following:
   obs_fbm.f90:(.text+0x115e1): undefined reference to `__netcdf_MOD_nf90_inquire_dimension'
   collect2: error: ld returned 1 exit status
   
-Looks like a NetCDF Fortran error so add the ``-lnetcdff`` flag (notice the
-extra `f`):
+Looks like a NetCDF Fortran error so add the ``-lnetcdff`` flag (notice the extra `f`):
 
 .. code-block :: none
 
