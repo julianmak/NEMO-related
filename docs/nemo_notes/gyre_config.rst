@@ -12,8 +12,7 @@ Brief overview and sample outputs
 How to get the model running
 ----------------------------
 
-GYRE is hard-coded into NEMO so nothing needs to be provided to run it out of
-the box.
+GYRE is hard-coded into NEMO so nothing needs to be provided to run it out of the box.
 
 Custom analysis scripts
 -----------------------
