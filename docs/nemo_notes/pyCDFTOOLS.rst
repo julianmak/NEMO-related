@@ -8,11 +8,11 @@
 analysis tools
 ==============
 
-For various reasons (mostly personal preference and forcing myself to write in Python) I previously attemped to make a translation of sorts of `CDFTOOLS <https://github.com/meom-group/CDFTOOLS>`_ in Python, and it ended up being called `pyCDFTOOLS <https://github.com/julianmak/pyCDFTOOLS>`. This will probably be renamed for reasons detailed later. [22 Apr 2025]
+For various reasons (mostly personal preference and forcing myself to write in Python) I previously attemped to make a translation of sorts of `CDFTOOLS <https://github.com/meom-group/CDFTOOLS>`_ in Python, and it ended up being called `pyCDFTOOLS <https://github.com/julianmak/pyCDFTOOLS>`_. This will probably be renamed for reasons detailed later. [22 Apr 2025]
 
 .. note ::
 
-  There is one as part of this repository, but probably don't use that anymore, as the one that will be `here <https://github.com/julianmak/pyCDFTOOLS>` and/or one that will replace it is done in a more modern way.
+  There is one as part of this repository, but probably don't use that anymore, as the one that will be `here <https://github.com/julianmak/pyCDFTOOLS>`_ and/or one that will replace it is done in a more modern way.
   
 There is some talk of a plan for the package. But in the meantime, the idea is that the python version would be:
 
