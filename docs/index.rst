@@ -20,4 +20,4 @@ I can be contacted at jclmak@ust.hk regarding modifying / adding to the content 
    compilation_notes/compilation_notes
    nemo_notes/nemo_notes
    GEOMETRIC/geometric
-   adding_content/adding_content
+   misc_content/misc_content

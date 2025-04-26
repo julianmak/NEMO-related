@@ -15,6 +15,7 @@ There is also a *singularity* page here for firedrake, because it doesn't really
    :caption: Misc. content:
    
    python.rst
+   jupyter.rst
    sphinx.rst
    git.rst
    singularity_firedrake.rst
