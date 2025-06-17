@@ -28,6 +28,7 @@ I added the following to my ``~/.bashrc`` so as to override the default compiler
    nemo37.rst
    nemo40.rst
    nemo42.rst
+   nemo50.rst
    Oxford_ARC.rst
    HKUST_HPC2.rst
    HKUST_HPC3.rst
