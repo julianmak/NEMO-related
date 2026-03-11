@@ -32,6 +32,7 @@ I added the following to my ``~/.bashrc`` so as to override the default compiler
    Oxford_ARC.rst
    HKUST_HPC2.rst
    HKUST_HPC3.rst
+   HKUST_HPC4.rst
    packages.rst
 
 
