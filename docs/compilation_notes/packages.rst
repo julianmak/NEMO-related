@@ -19,9 +19,17 @@ The following packages are needed for NEMO and XIOS and they may need to be inst
 
   I would suggest trying the following in reverse order of effort required:
 
-  1. Get someone who knows what they are doing to do it for you! Compiling the following from scratch is not the most interesting activity and is actually quite fiddly (especially the HDF5 and NetCDF4 stuff)...if you don't have access to people who can do that, then try
-  2. Doing it through anaconda. There you are somewhat restricted to a certain set of compilers (``gcc 4.8``) but anaconda sorts out the dependencies for you. The only thing then you need to do is to force XIOS and NEMO to use the libraries within the anaconda installation. Failing that...
-  3. Do it from scratch. I'm sorry and good luck; see below for some notes to possibly ease your pain.
+  1. Get someone who knows what they are doing to do it for you! Compiling the libraries is not the most interesting activity and can be quite fiddly (especially the HDF5 and NetCDF4 stuff)... if you don't have access to people who can do that, then try
+  2. Doing it through `spack <https://spack.io/>`_; see :ref:`HPC4 compilation page <sec:hkusthpc4>` for relevant info.
+  3. Doing it through anaconda. There you are somewhat restricted to a certain set of compilers (``gcc 4.8``) but anaconda sorts out the dependencies for you. The only thing then you need to do is to force XIOS and NEMO to use the libraries within the anaconda installation. Failing that...
+  4. Do it from scratch. I'm sorry and good luck; see below for some notes to possibly ease your pain.
+  
+Spack
+-----
+
+`Spack <https://spack.io/>`_ is a bit like Anaconda and is a library manager. You deal with environments and the like and build different versions of different libraries with different combinations of compilers to avoid clashes and so forth.
+
+I think it's much more in context to see how it works with an example case, so see :ref:`HPC4 compilation page <sec:hkusthpc4>` for that.
 
 Anaconda
 --------
