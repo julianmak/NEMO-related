@@ -38,6 +38,10 @@ So as an example, ``ssh -N -f -L 4167:10.1.2.126:4167 jclmak@hpc3.ust.hk`` means
 
   The above works ok for me whether my laptop firewall is on or not. However, I seem to need to enter the token manually, while for my post-doc she could do something like ``http://hhnode-ib-21:8888/?token=WHATEVER`` and get on directly. Not sure what the deal is.
   
+.. note::
+
+  Could probably do something similar to open a port for VScode or similar. In that case just open the port into the node probably but don't run the Jupyter notebook commands through the SLURM script.
+  
 Sample submit script for a SLURM system:
 
 .. code-block:: bash
@@ -45,9 +49,8 @@ Sample submit script for a SLURM system:
   #SBATCH -o stdouterr_%j # output and error file name
   #SBATCH -n 1            # total number of mpi tasks requested
   #SBATCH -N 1            # total number of nodes requested
-  #SBATCH -p cpu          # queue (partition) -- standard, development, etc.
+  #SBATCH -p hpc3oces-cpu # queue (partition) -- standard, development, etc.
   #SBATCH -t 12:00:00     # maximum runtime
-  ##SBATCH -x hhnode-ib-[10,24,52,53,48,36]    # avoid some nodes
 
   # Setup runtime environment if necessary
   # module load anaconda3  # commented here because I use a separate miniconda manager
@@ -57,12 +60,19 @@ Sample submit script for a SLURM system:
   source /home/jclmak/miniconda3/bin/activate
   source /home/jclmak/miniconda3/bin/activate py311
   python --version
-
-  # Set Tunneling information
+  
+  ### Set Tunneling information
+  # 1. Get the specific hostname
   node=$(hostname)
+  
+  # 2. Get the IP address directly from the node
+  # 'hostname -I' lists all IPs; awk takes the first one (usually the primary LAN IP)
+  node_ip=$(hostname -I | awk '{print $1}')
+
+  # 3. then get cluster stuff
   user=$(whoami)
-  cluster="hpc3.ust.hk"
-  port=4167  # provide a specific port to avoid possible clashing
+  cluster="hpc4.ust.hk"
+  port=4167   # provide a specific port to avoid possible clashing
 
   # Print tunneling instructions
   echo -e "
@@ -72,8 +82,6 @@ Sample submit script for a SLURM system:
 
   # Use a browser on your local machine to go to:
   http://localhost:${port}/
-
-  use output of dig +short ${node}.local to replace IP_TO_FILL
 
   "
 
