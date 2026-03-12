@@ -201,16 +201,23 @@ First make sure to pull a sufficiently updated version of XIOS 2.5 in this case.
 
   Older versions the XIOS2.5 (~r15xx) that spack was defaulting to had a whole load of C++ errors with "type mismatch", which seem to all disappear when using a more recent version. Probably a compiler mismatch issue, could not be bothered identifying precisely what the cause was.
   
+.. note::
+
+  For NEMO 4.2.0 onwards it looks like the version needed can be gotten from
+  
+  .. code-block:: bash
+  
+    svn co http://forge.ipsl.jussieu.fr/ioserver/svn/XIOS/trunk
+    
+  and not the one at ``XIOS2``, which will fail to compile because the ``xios_send_field`` command does not have the tiling option (look into ``$XIOS_HOME/ppsrc/`` with ``grep`` accordingly). 
+  
+  This one requests the ``-std=c++11`` flag. The one I first pulled can be compiled without ``-D_GLIBCXX_USE_CXX11_ABI=0`` and ``-std=c++11`` flags (it complains about "ambiguous references" otherwise).
+  
 The changes I to the ``*.fcm`` file were
 
 * add ``/project/miffy/custom_libs_spack/environments/xios/.spack-env/view/[lib,inc,bin]`` to the relevant places
 
   - the above path is where the environment things are consolidated
-
-* remove the ``-D_GLIBCXX_USE_CXX11_ABI=0`` and ``-std=c++11`` flags
-
-  - didn't seem to need it for ``gcc11``
-  - ``-std=c++11`` returns "ambiguous reference" errors
   
 * add in ``-ffree-line-length-none`` for ``%BASE_FFLAGS`` for the usual reason
 
