@@ -22,7 +22,7 @@ According to the NEMO `install guide <https://sites.nemo-ocean.io/user-guide/ins
 
 .. note::
 
-  The tell tell sign for a "wrong" pull (e.g. from ``svn co http://forge.ipsl.jussieu.fr/ioserver/svn/XIOS2/trunk``, which at the time of writing is what the NEMO page tells you to do...) would be that when NEMO compiles it will fail at ``xios_send_field``, and the reason is documented `here <https://nemo-ocean.discourse.group/t/v4-2-x-compilation-no-xios-send-field-subroutine/265>`_. If you look into ``$XIOS_HOME`` or ``$XIOS_HOME/ppsrc`` and do ``grep -ri "xios_send_field"`` you will find the "right" one has some ``*_tiled_*`` subroutines while the "wrong" one does not.
+  The tell-tale sign for a "wrong" pull (e.g. from ``svn co http://forge.ipsl.jussieu.fr/ioserver/svn/XIOS2/trunk``, which at the time of writing is what the NEMO page tells you to do...) would be that when NEMO compiles it will fail at ``xios_send_field``, and the reason is documented `here <https://nemo-ocean.discourse.group/t/v4-2-x-compilation-no-xios-send-field-subroutine/265>`_. If you look into ``$XIOS_HOME`` or ``$XIOS_HOME/ppsrc`` and do ``grep -ri "xios_send_field"`` you will find the "right" one has some ``*_tiled_*`` subroutines while the "wrong" one does not.
   
   The stuff below uses the "right" one (which will request the ``-std=c++11`` flag).
 
