@@ -46,7 +46,7 @@ in my ``.bashrc``.
 
 .. note::
 
-  **[TODO]** Probably should use ``spack env create -d /project/miffy/custom_libs_spack`` or similar instead. Do that test for later. (Probably call it ``/project/miffy/custom_libs_spack/gcc11.5_xios_libs``, so people can create their own libraries housed in ``custom_libs_spack`` rather than rely on a default.)
+  Probably should use ``spack env create -d /project/miffy/custom_libs_spack`` or similar instead. Do that test for later. (Probably call it ``/project/miffy/custom_libs_spack/gcc11.5_xios_libs``, so people can create their own libraries housed in ``custom_libs_spack`` rather than rely on a default.)
 
 Activate environments
 ^^^^^^^^^^^^^^^^^^^^^
@@ -144,7 +144,9 @@ The choices I made here are as follows:
   
 .. note::
 
-  **[TODO]** ``spack-edge`` may have a more complete version of ``perl`` suitable for the purposes below.
+  ``spack-edge`` may have a more complete version of ``perl`` suitable for the purposes below.
+  
+  ``spack-edge`` keeps pulling in a clashing compiler for me at various places, which is causing a ton of clashes with HDF5. Probably some default setting that needs to be suppressed, but can't find it; giving up on this for now.
 
 Concretizing environment
 ^^^^^^^^^^^^^^^^^^^^^^^^
